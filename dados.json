@@ -23,7 +23,8 @@
   "VT",
   "Vtzinho",
   "Sacchi",
-  "Baguera"
+  "Baguera",
+  "Leo"
  ],
  "etapas": [
   {
@@ -276,11 +277,14 @@
    "pontos": {
     "Arruda": 40,
     "Lorenzo": 40,
-    "Teng": 40,
-    "Pasqual": 30,
     "Mathz": 10,
     "Muniz": 10,
-    "Pedrão": 10
+    "Pasqual": 30,
+    "Pedrão": 10,
+    "Teng": 40,
+    "Sacchi": 40,
+    "Baguera": 10,
+    "Leo": 10
    }
   }
  ],
