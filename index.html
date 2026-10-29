@@ -218,6 +218,7 @@ pre{font-family:var(--font-num);font-size:12px;background:var(--surface-2);borde
 .podio-card.p1{background:var(--yellow);border-color:var(--yellow);color:var(--yellow-ink)}
 .podio-card.p1 .podio-pos,.podio-card.p1 .podio-pts,.podio-card.p1 small{color:var(--yellow-ink);opacity:.7}
 @media (max-width:700px){ .podio3{grid-template-columns:minmax(0,1fr)} }
+.card.editando{border-color:var(--yellow);box-shadow:inset 4px 0 0 var(--yellow)}
 .login{max-width:380px;margin:48px auto 0;padding:24px;display:flex;flex-direction:column;gap:14px}
 /* cards limpos: sem legendas */
 .kpi-foot,.kpi .badge,.strip .ft{display:none}
@@ -882,11 +883,32 @@ function abrirFicha(nome) {
 
 /* ===================== Admin ===================== */
 const hoje = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-const novoRascunho = () => ({ data: hoje(), nome: "", jogou: {}, pos: {}, fora: 0, torneio: "", cash: "" });
+// editIdx: índice da etapa sendo editada (null = etapa nova); modo "pts" = etapa antiga da planilha, editada direto nos pontos
+const novoRascunho = () => ({ data: hoje(), nome: "", jogou: {}, pos: {}, fora: 0, torneio: "", cash: "", editIdx: null, modo: "pos" });
 let rascunho = novoRascunho(), apagar = null, avisoAdm = "";
+
+const torneioDoDia = data => CLUBE.entradas.filter(x => x[0] === data && tipoEntrada(x[1]) !== "cash");
+
+function editarEtapa(i) {
+  const e = CLUBE.etapas[i], ev = D.etapas[i];
+  rascunho = novoRascunho();
+  Object.assign(rascunho, { data: e.data, nome: e.nome || "", editIdx: i, dataOrig: e.data, modo: e.posicoes ? "pos" : "pts", fora: e.fora || 0 });
+  ev.res.forEach(r => { rascunho.jogou[r.nome] = true; rascunho.pos[r.nome] = e.posicoes ? (r.acordo ? 1 : r.pos) : r.pts; });
+  const t = sum(torneioDoDia(e.data).map(x => x[2]));
+  rascunho.torneio = t ? String(t) : ""; rascunho.torneioOrig = rascunho.torneio;
+  renderAdmin();
+  document.getElementById("lancar").scrollIntoView({ behavior: "smooth" });
+}
 
 function pontosRascunho() {
   const nomes = CLUBE.jogadores.filter(n => rascunho.jogou[n]);
+  if (rascunho.modo === "pts") {
+    const out = {}, erros = [];
+    if (!rascunho.data) erros.push("Escolha a data da etapa.");
+    if (nomes.length < 2) erros.push("Marque pelo menos dois jogadores.");
+    nomes.forEach(n => { const p = parseInt(rascunho.pos[n], 10); if (!(p > 0)) erros.push(`Falta a pontuação de ${n}.`); else out[n] = p; });
+    return { out, erros, N: 0, acordo: 0, nomes, membros: [], posicoes: {} };
+  }
   const pos = n => parseInt(rascunho.pos[n], 10) || 0;
   const acordo = nomes.filter(n => pos(n) === 1).length;
   const N = acordo + (parseInt(rascunho.fora, 10) || 0);
@@ -943,8 +965,8 @@ function renderAdmin() {
   </section>
   ${avisoAdm ? `<p class="adm-ok" role="status">${esc(avisoAdm)}</p>` : ""}
 
-  <section class="card" style="margin-top:16px" id="lancar">
-    <div class="panel-head"><h2>Lançar etapa</h2><span class="meta">marque quem jogou e a posição final</span></div>
+  <section class="card ${rascunho.editIdx !== null ? "editando" : ""}" style="margin-top:16px" id="lancar">
+    <div class="panel-head"><h2>${rascunho.editIdx !== null ? `Editar etapa ${rascunho.editIdx + 1} · ${dt(rascunho.dataOrig)}` : "Lançar etapa"}</h2><span class="meta">${rascunho.modo === "pts" ? "etapa antiga: edite os pontos de cada um" : "marque quem jogou e a posição final"}</span></div>
     <div class="panel-body adm-form">
       <div class="adm-row">
         <div class="field"><label for="r-data">Data</label><input id="r-data" type="date" data-r="data" value="${esc(rascunho.data)}"></div>
@@ -954,16 +976,16 @@ function renderAdmin() {
         <div class="field small"><label for="r-torneio">Arrecadado no torneio (R$)</label><input id="r-torneio" type="number" min="0" step="0.01" data-r="torneio" value="${esc(rascunho.torneio)}"></div>
       </div>
       <p class="note">O cash da noite é lançado separado, em “Lançar cash”, logo abaixo.</p>
-      <p class="note">Coloque 1 em quem ganhou, ou em todos do acordo. No site, quem fez acordo aparece na posição do acordo (acordo de 4 → todos em 4º). Os demais continuam da posição seguinte, cada um no seu lugar, sem repetir (6º, 7º, 8º...).</p>
+      <p class="note">${rascunho.modo === "pts" ? "Esta etapa veio da planilha, então cada campo é a pontuação do jogador (90, 75, 60, 40, 30, 10 ou 5)." : "Coloque 1 em quem ganhou, ou em todos do acordo. No site, quem fez acordo aparece na posição do acordo (acordo de 4 → todos em 4º). Os demais continuam da posição seguinte, cada um no seu lugar, sem repetir (6º, 7º, 8º...)."}</p>
       <div class="players">
         ${ordenados.map(n => { const i = CLUBE.jogadores.indexOf(n), on = !!rascunho.jogou[n]; return `<div class="pl ${on ? "on" : ""}">
           <label class="chk"><input type="checkbox" data-jogou="${i}" ${on ? "checked" : ""}><span>${esc(n)}</span></label>
-          <input type="number" min="1" class="pos" aria-label="Posição de ${esc(n)}" data-pos="${i}" value="${esc(rascunho.pos[n] || "")}" ${on ? "" : "disabled"} placeholder="pos.">
+          <input type="number" min="1" class="pos" aria-label="Posição de ${esc(n)}" data-pos="${i}" value="${esc(rascunho.pos[n] || "")}" ${on ? "" : "disabled"} placeholder="${rascunho.modo === "pts" ? "pts" : "pos."}">
           <span class="num pts" id="pts-${i}">${on && R.out[n] !== undefined ? R.out[n] + " pts" : ""}</span>
         </div>`; }).join("")}
       </div>
       <div id="r-resumo">${resumoRascunho(R)}</div>
-      <div class="adm-actions"><button class="ghost primary" data-acao="salvarEtapa">Salvar etapa</button><button class="btn-sm" data-acao="limparEtapa">Limpar</button></div>
+      <div class="adm-actions"><button class="ghost primary" data-acao="salvarEtapa">${rascunho.editIdx !== null ? "Salvar alterações" : "Salvar etapa"}</button><button class="btn-sm" data-acao="limparEtapa">${rascunho.editIdx !== null ? "Cancelar edição" : "Limpar"}</button></div>
     </div>
   </section>
 
@@ -1013,7 +1035,7 @@ function renderAdmin() {
     <div class="tbl-wrap"><table class="wide"><thead><tr><th>Data</th><th>Etapa</th><th class="c">Jogadores</th><th>Topo</th><th class="r">Arrecadado</th><th></th></tr></thead><tbody>
       ${[...D.etapas].reverse().map(e => `<tr><td class="num">${dt(e.data)}</td><td>Etapa ${e.num}${e.nome ? " · " + esc(e.nome) : ""}</td><td class="c num">${e.res.length}</td>
         <td>${e.res.filter(r => r.acordo || r.pos === 1).map(r => esc(r.nome)).join(", ")}${e.acordo > 1 ? ` <span class="tag">Acordo em ${e.acordo}</span>` : ""}</td>
-        <td class="r num">${e.arrec ? brl(e.arrec) : "–"}</td><td class="r">${delBtn("e" + (e.num - 1))}</td></tr>`).join("")}
+        <td class="r num">${e.arrec ? brl(e.arrec) : "–"}</td><td class="r"><span class="adm-actions" style="justify-content:flex-end"><button class="btn-sm" data-edit="${e.num - 1}">Editar</button>${delBtn("e" + (e.num - 1))}</span></td></tr>`).join("")}
     </tbody></table></div>
   </section>
 
@@ -1072,13 +1094,29 @@ function acaoAdmin(acao) {
   if (acao === "salvarEtapa") {
     const R = pontosRascunho();
     if (R.erros.length) { document.getElementById("r-resumo").innerHTML = resumoRascunho(R); return; }
-    const e = { data: rascunho.data, acordo: R.membros, fora: R.membros.length ? parseInt(rascunho.fora, 10) || 0 : 0, posicoes: R.posicoes, pontos: R.out };
+    const e = rascunho.modo === "pts"
+      ? { data: rascunho.data, pontos: R.out }
+      : { data: rascunho.data, acordo: R.membros, fora: R.membros.length ? parseInt(rascunho.fora, 10) || 0 : 0, posicoes: R.posicoes, pontos: R.out };
     if (rascunho.nome.trim()) e.nome = rascunho.nome.trim();
-    CLUBE.etapas.push(e);
-    const t = parseFloat(rascunho.torneio);
+    const editando = rascunho.editIdx !== null;
+    const t = parseFloat(rascunho.torneio) || 0;
     // a descrição precisa ter "Torneio" para a divisão 40/30/30 reconhecer a entrada
-    if (t > 0) CLUBE.entradas.push([rascunho.data, e.nome && /torneio/i.test(e.nome) && !/cash/i.test(e.nome) ? e.nome : "Torneio", t]);
-    avisoAdm = `Etapa de ${dt(rascunho.data)} salva com ${R.nomes.length} jogadores.`;
+    let desc = e.nome && /torneio/i.test(e.nome) && !/cash/i.test(e.nome) ? e.nome : "Torneio";
+    if (editando) {
+      CLUBE.etapas[rascunho.editIdx] = e;
+      // só mexe no dinheiro do torneio se a data ou o valor mudaram
+      if (rascunho.data !== rascunho.dataOrig || String(rascunho.torneio) !== String(rascunho.torneioOrig)) {
+        const antigas = torneioDoDia(rascunho.dataOrig);
+        if (antigas.length === 1) desc = antigas[0][1]; // mantém "Torneio e Cash" das noites antigas
+        CLUBE.entradas = CLUBE.entradas.filter(x => !antigas.includes(x));
+        if (t > 0) CLUBE.entradas.push([rascunho.data, desc, t]);
+      }
+      avisoAdm = `Etapa de ${dt(rascunho.data)} atualizada.`;
+    } else {
+      CLUBE.etapas.push(e);
+      if (t > 0) CLUBE.entradas.push([rascunho.data, desc, t]);
+      avisoAdm = `Etapa de ${dt(rascunho.data)} salva com ${R.nomes.length} jogadores.`;
+    }
     rascunho = novoRascunho();
   } else if (acao === "addCash") {
     const data = val("c-data"), v = parseFloat(val("c-valor"));
@@ -1117,7 +1155,7 @@ function apagarAdmin(k) {
   apagar = null;
   const i = +k.slice(1);
   if (k === "tudo") { try { localStorage.removeItem(CHAVE); } catch (e) {} aplicarDados(JSON.parse(ORIGINAL)); recalcular(); avisoAdm = "Alterações descartadas."; return renderAdmin(); }
-  if (k[0] === "e") CLUBE.etapas.splice(i, 1);
+  if (k[0] === "e") { CLUBE.etapas.splice(i, 1); rascunho = novoRascunho(); }
   if (k[0] === "j") CLUBE.jogadores.splice(i, 1);
   if (k[0] === "n") CLUBE.entradas.splice(i, 1);
   if (k[0] === "s") CLUBE.saidas.splice(i, 1);
@@ -1160,6 +1198,7 @@ document.querySelector(".tabs").addEventListener("click", e => { const b = e.tar
 app.addEventListener("click", e => {
   const ac = e.target.closest("[data-acao]"); if (ac) return acaoAdmin(ac.dataset.acao);
   const dl = e.target.closest("[data-del]"); if (dl) return apagarAdmin(dl.dataset.del);
+  const ed = e.target.closest("[data-edit]"); if (ed) return editarEtapa(+ed.dataset.edit);
   const f = e.target.closest("[data-ficha]"); if (f) return abrirFicha(f.dataset.ficha);
   const g = e.target.closest("[data-go]"); if (g) return go(g.dataset.go);
   const s = e.target.closest("[data-sort]");
