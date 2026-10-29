@@ -643,7 +643,8 @@ const dt = s => { const [y, m, d] = s.split("-"); return `${d}/${m}/${y}`; };
 const dtShort = s => { const [, m, d] = s.split("-"); return `${d}/${m}`; };
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const medal = p => `<span class="medal ${p <= 3 ? "m" + p : ""} num">${p}º</span>`;
+// quem fez acordo fica em amarelo, na posição do acordo (ex.: acordo em 4 → 4º amarelo)
+const medal = (p, acordo = false) => `<span class="medal ${acordo ? "m1" : p <= 3 ? "m" + p : ""} num">${p}º</span>`;
 
 /* ===================== estado ===================== */
 recalcular();
@@ -753,7 +754,7 @@ function tabelaEtapa(e) {
   return `<table>
     <thead><tr><th class="c">Pos.</th><th>Jogador</th><th class="r">Pontos</th>${conf ? `<th class="r">Pela regra</th>` : ""}<th class="r">Total no ranking</th><th></th></tr></thead>
     <tbody>${e.res.map(r => `<tr>
-      <td class="c">${medal(r.pos)}</td>
+      <td class="c">${medal(r.pos, r.acordo)}</td>
       <td class="name-cell">${esc(r.nome)}${r.acordo ? ` <span class="tag">Acordo</span>` : ""}</td>
       <td class="r num">${r.pts}</td>${conf ? `<td class="r num">${r.regra !== r.pts ? `<span class="down">${r.regra}</span>` : r.regra}</td>` : ""}
       <td class="r num">${D.st[r.nome].pts}</td>
@@ -840,7 +841,7 @@ function renderEtapas() {
   app.innerHTML = headHtml("Etapas", "", { temporada: true }) + `<section class="etapas" style="margin-top:16px">
     ${[...D.etapas].reverse().map(e => `<article class="card etapa">
       <div class="etapa-h"><b>Etapa ${e.num}${e.nome ? " · " + esc(e.nome) : ""}</b><span>${dt(e.data)}</span></div>
-      <div class="podium">${e.res.filter(r => r.acordo || r.pos <= 3).map(r => `<div>${medal(r.pos)}<span class="nm">${esc(r.nome)}</span><span class="num">${r.pts} pts</span></div>`).join("")}</div>
+      <div class="podium">${e.res.filter(r => r.acordo || r.pos <= 3).map(r => `<div>${medal(r.pos, r.acordo)}<span class="nm">${esc(r.nome)}</span><span class="num">${r.pts} pts</span></div>`).join("")}</div>
       <div class="etapa-f">
         <span class="tag num">${e.res.length} jogadores</span>
         ${e.acordo > 1 ? `<span class="tag">Acordo em ${e.acordo}</span>` : `<span class="tag">Venceu sozinho</span>`}
@@ -1166,7 +1167,7 @@ function abrirFicha(nome) {
     </div>
     <div class="card"><div class="panel-head"><h2>Histórico</h2></div>
       <div class="tbl-wrap"><table><thead><tr><th>Etapa</th><th class="c">Pos.</th><th class="r">Pontos</th></tr></thead><tbody>
-      ${[...s.hist].reverse().map(h => `<tr><td>E${h.etapa} · <span class="num">${dt(h.data)}</span></td><td class="c">${medal(h.pos)} <span class="note">de ${h.field}</span></td><td class="r num">${h.pts}</td></tr>`).join("")}
+      ${[...s.hist].reverse().map(h => `<tr><td>E${h.etapa} · <span class="num">${dt(h.data)}</span></td><td class="c">${medal(h.pos, h.acordo > 0)} <span class="note">de ${h.field}</span></td><td class="r num">${h.pts}</td></tr>`).join("")}
       </tbody></table></div></div>
   </aside>`;
   const close = () => { ov.remove(); document.removeEventListener("keydown", onKey); };

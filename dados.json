@@ -274,17 +274,20 @@
   },
   {
    "data": "2026-10-23",
+   "acordo": ["Arruda", "Lorenzo", "Sacchi", "Teng"],
+   "fora": 0,
+   "posicoes": { "Pasqual": 5, "Muniz": 6, "Mathz": 7, "Leo": 8, "Baguera": 9, "Pedrão": 10 },
    "pontos": {
     "Arruda": 40,
     "Lorenzo": 40,
-    "Mathz": 10,
-    "Muniz": 10,
-    "Pasqual": 30,
-    "Pedrão": 10,
-    "Teng": 40,
     "Sacchi": 40,
+    "Teng": 40,
+    "Pasqual": 30,
+    "Muniz": 10,
+    "Mathz": 10,
+    "Leo": 10,
     "Baguera": 10,
-    "Leo": 10
+    "Pedrão": 10
    }
   }
  ],
