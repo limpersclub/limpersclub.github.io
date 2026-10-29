@@ -371,7 +371,14 @@ function calcular(n = CLUBE.etapas.length) {
   const etapas = CLUBE.etapas.slice(0, n).map((e, idx) => {
     const L = lerEtapa(e);
     const res = Object.entries(L.pontos).map(([nome, pts]) => ({ nome, pts, regra: L.regra ? L.regra[nome] : pts })).sort((a, b) => b.pts - a.pts || a.nome.localeCompare(b.nome));
-    res.forEach((r, i) => r.pos = i && r.pts === res[i - 1].pts ? res[i - 1].pos : i + 1); // empate divide a posição
+    // a posição sai dos pontos (90 = 1º, 75 = 2º... 10 = 6º, 5 = 11º); quem está no acordo fica em 1º
+    res.forEach((r, i) => {
+      const t = CLUBE.pontosPorPosicao.indexOf(r.pts);
+      r.pos = L.acordo > 1 && r.pts === res[0].pts ? 1
+        : t >= 0 ? t + 1
+        : r.pts === CLUBE.pontosDemais ? CLUBE.pontosPorPosicao.length + 1
+        : i && r.pts === res[i - 1].pts ? res[i - 1].pos : i + 1;
+    });
     const doDia = entradas.filter(x => x.data === e.data);
     const arrec = sum(doDia.map(x => x.valor));
     const tipo = doDia.map(x => x.descricao).join(" + ") || "Torneio";
