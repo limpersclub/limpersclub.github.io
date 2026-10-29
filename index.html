@@ -1226,8 +1226,8 @@ function renderAdmin() {
       <p class="note">${temAlteracoes() ? "Os participantes só veem depois de publicar. As alterações ficam guardadas neste navegador até lá." : "O que você lançar aqui fica guardado neste navegador até você publicar."}</p></div>
     <div class="adm-actions">${temAlteracoes() ? `<button class="ghost primary" data-acao="publicar" ${publicando || !tokenSalvo() ? "disabled" : ""}>Publicar no site</button>${delBtn("tudo", "Descartar alterações")}` : ""}</div>
   </section>
-  ${temAlteracoes() && !tokenSalvo() ? `<p class="note" style="margin-top:8px">Para publicar, salve a chave do GitHub no card “Publicação”, no fim da página.</p>` : ""}
   ${avisoAdm ? `<p class="${avisoErro || /^(Preencha|O valor passa|Não consegui)/.test(avisoAdm) ? "adm-err" : "adm-ok"}" role="status" style="list-style:none;padding:0">${esc(avisoAdm)}</p>` : ""}
+  ${!tokenSalvo() ? publicacaoHtml(delBtn) : ""}
 
   <section class="card ${rascunho.editIdx !== null ? "editando" : ""}" style="margin-top:16px" id="lancar">
     <div class="panel-head"><h2>${rascunho.editIdx !== null ? `Editar etapa ${rascunho.editIdx + 1} · ${dt(rascunho.dataOrig)}` : "Lançar etapa"}</h2><span class="meta">${rascunho.modo === "pts" ? "etapa antiga: edite os pontos de cada um" : "marque quem jogou e a posição final"}</span></div>
@@ -1327,22 +1327,7 @@ function renderAdmin() {
     </tbody></table></div>
   </section>
 
-  <section class="card" style="margin-top:16px" id="publicacao">
-    <div class="panel-head"><h2>Publicação</h2><span class="meta">${tokenSalvo() ? "chave salva neste navegador" : "falta salvar a chave"}</span></div>
-    <div class="panel-body adm-form">
-      ${tokenSalvo() ? `<div class="adm-actions"><span class="adm-ok" style="margin:0">Este navegador já pode publicar.</span><button class="btn-sm" data-acao="testarToken">Testar chave</button>${delBtn("token", "Remover chave")}</div>`
-      : `<ol class="passos">
-          <li>Entre em github.com logado e abra <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens</b>.</li>
-          <li>Clique em <b>Generate new token</b>. Dê um nome (ex.: “Admin limper's club”) e escolha a validade.</li>
-          <li>Em <b>Resource owner</b>, escolha <b>limpersclub</b>. Em <b>Repository access</b>, marque <b>Only select repositories</b> e escolha <b>limpersclub.github.io</b>.</li>
-          <li>Em <b>Permissions → Repository permissions</b>, coloque <b>Contents</b> em <b>Read and write</b>.</li>
-          <li>Clique em <b>Generate token</b>, copie a chave e cole aqui embaixo.</li>
-        </ol>
-        <div class="adm-row"><div class="field"><label for="tokenInp">Chave do GitHub</label><input id="tokenInp" type="password" autocomplete="off" placeholder="github_pat_..."></div>
-          <button class="ghost primary" data-acao="salvarToken" style="align-self:end">Salvar chave</button></div>
-        <p class="note">A chave fica guardada só neste navegador, nunca no site. Para publicar de outro aparelho, salve a chave nele também.</p>`}
-    </div>
-  </section>
+  ${tokenSalvo() ? publicacaoHtml(delBtn) : ""}
 
   <section class="card" style="margin-top:16px" id="exportar">
     <div class="panel-head"><h2>Exportar e importar</h2></div>
@@ -1364,6 +1349,26 @@ function renderAdmin() {
   <h2 style="margin-top:28px;font-size:20px">Regras</h2>
   ${regrasHtml()}`;
   avisoAdm = ""; avisoErro = false;
+}
+
+// sem chave salva o card aparece no topo do admin; com chave, desce para o fim
+function publicacaoHtml(delBtn) {
+  return `<section class="card ${tokenSalvo() ? "" : "editando"}" style="margin-top:16px" id="publicacao">
+    <div class="panel-head"><h2>Publicação</h2><span class="meta">${tokenSalvo() ? "chave salva neste navegador" : "configure uma vez para poder publicar"}</span></div>
+    <div class="panel-body adm-form">
+      ${tokenSalvo() ? `<div class="adm-actions"><span class="adm-ok" style="margin:0">Este navegador já pode publicar.</span><button class="btn-sm" data-acao="testarToken">Testar chave</button>${delBtn("token", "Remover chave")}</div>`
+      : `<ol class="passos">
+          <li>Entre em github.com logado e abra <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens</b>.</li>
+          <li>Clique em <b>Generate new token</b>. Dê um nome (ex.: “Admin limper's club”) e escolha a validade.</li>
+          <li>Em <b>Resource owner</b>, escolha <b>limpersclub</b>. Em <b>Repository access</b>, marque <b>Only select repositories</b> e escolha <b>limpersclub.github.io</b>.</li>
+          <li>Em <b>Permissions → Repository permissions</b>, coloque <b>Contents</b> em <b>Read and write</b>.</li>
+          <li>Clique em <b>Generate token</b>, copie a chave e cole aqui embaixo.</li>
+        </ol>
+        <div class="adm-row"><div class="field"><label for="tokenInp">Chave do GitHub</label><input id="tokenInp" type="password" autocomplete="off" placeholder="github_pat_..."></div>
+          <button class="ghost primary" data-acao="salvarToken" style="align-self:end">Salvar chave</button></div>
+        <p class="note">A chave fica guardada só neste navegador, nunca no site. Para publicar de outro aparelho, salve a chave nele também.</p>`}
+    </div>
+  </section>`;
 }
 
 function resumoRascunho(R) {
