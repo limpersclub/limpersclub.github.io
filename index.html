@@ -48,6 +48,8 @@ button,input{font:inherit;color:inherit}
 .tab{background:none;border:0;border-radius:999px;padding:7px 14px;color:var(--yellow-ink);opacity:.7;cursor:pointer;white-space:nowrap;font-weight:600}
 .tab:hover{opacity:1}
 .tab[aria-selected="true"]{opacity:1;background:var(--yellow-ink);color:var(--yellow)}
+.adm-tab{display:inline-flex;align-items:center;gap:6px;flex:none;border:1.5px solid currentColor;opacity:.85}
+.adm-tab svg{width:15px;height:15px}
 .icon-btn{background:transparent;border:1.5px solid currentColor;border-radius:999px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer;flex:none;color:inherit}
 .icon-btn svg{width:16px;height:16px}
 
@@ -221,6 +223,8 @@ footer{color:var(--faint);font-size:12px;display:flex;justify-content:space-betw
   .donut-wrap{grid-template-columns:minmax(0,1fr);justify-items:center}
   .legend{width:100%}
   .wm{font-size:21px}
+  .adm-tab span{display:none}
+  .adm-tab{padding:7px 9px}
   .top-in{gap:12px}
   .kpi-val{font-size:28px}
   .mini{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -236,8 +240,11 @@ footer{color:var(--faint);font-size:12px;display:flex;justify-content:space-betw
       <button class="tab" role="tab" data-tab="ranking" id="t-ranking">Ranking</button>
       <button class="tab" role="tab" data-tab="etapas" id="t-etapas">Etapas</button>
       <button class="tab" role="tab" data-tab="caixa" id="t-caixa">Caixa</button>
-      <button class="tab" role="tab" data-tab="admin" id="t-admin" hidden>Admin</button>
     </nav>
+    <button class="tab adm-tab" data-tab="admin" id="t-admin" aria-label="Área do admin">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <span>Admin</span>
+    </button>
     <button class="icon-btn" id="themeBtn" aria-label="Alternar tema claro ou escuro">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
@@ -415,7 +422,7 @@ function calcular(n = CLUBE.etapas.length) {
 
 const POTES = ["caixa", "ranking", "jackpot", "organizacao"];
 const POTES_PUB = ["caixa", "ranking", "jackpot"]; // organização só aparece no admin
-const NOME_POTE = { caixa: "Caixa", ranking: "Premiação rank", jackpot: "Jackpot", organizacao: "Organização" };
+const NOME_POTE = { caixa: "Caixa", ranking: "Premiação Rank do Torneio", jackpot: "Jackpot do Cash", organizacao: "Organização" };
 const COR_POTE = { caixa: "var(--yellow)", ranking: "var(--s1)", jackpot: "var(--red)", organizacao: "var(--s4)" };
 const r2 = v => Math.round(v * 100) / 100;
 const tipoEntrada = d => /cash/i.test(d) && !/torneio/i.test(d) ? "cash" : /torneio/i.test(d) && !/cash/i.test(d) ? "torneio" : "misto";
@@ -512,12 +519,12 @@ function renderPainel() {
       <div class="kpi-foot">${brl(caixa.sobraQuitacao)} que sobrou da quitação + 30% dos torneios e 25% do cash</div>
     </div>
     <div class="card kpi">
-      <div class="kpi-top">Premiação rank</div>
+      <div class="kpi-top">Premiação Rank do Torneio</div>
       <div class="kpi-val num">${brl(P.ranking)}</div>
       <div class="kpi-foot">guardado para o prêmio do ranking</div>
     </div>
     <div class="card kpi">
-      <div class="kpi-top">Jackpot <span class="badge">50% do cash</span></div>
+      <div class="kpi-top">Jackpot do Cash</div>
       <div class="kpi-val num">${brl(P.jackpot)}</div>
       <div class="kpi-foot">acumulado desde ${dt(CLUBE.quitacao)}</div>
     </div>
@@ -771,11 +778,11 @@ function regrasHtml() {
         <li>Desempate no ranking: mais vitórias sozinho, depois mais acordos, depois mais top 3.</li>
       </ul>
     </div></div>
-    <div class="card"><div class="panel-head"><h2>Premiação rank</h2></div><div class="panel-body">
+    <div class="card"><div class="panel-head"><h2>Premiação Rank do Torneio</h2></div><div class="panel-body">
       <table><thead><tr><th>Posição no ranking</th><th class="r">Parte</th><th class="r">Hoje</th></tr></thead><tbody>
         ${CLUBE.premiacaoRanking.map((f, i) => `<tr><td>${i + 1}º</td><td class="r num">${pct(f)}</td><td class="r num">${brl(r2(caixa.potes.ranking * f))}</td></tr>`).join("")}
       </tbody></table>
-      <p>O ranking é anual e termina sempre na etapa de aniversário do clube. Nela, o valor guardado na premiação rank é dividido entre os três primeiros do ranking. A temporada atual começou em ${dt(CLUBE.inicioTemporada)}.</p>
+      <p>O ranking é anual e termina sempre na etapa de aniversário do clube. Nela, o valor guardado na Premiação Rank do Torneio é dividido entre os três primeiros do ranking. A temporada atual começou em ${dt(CLUBE.inicioTemporada)}.</p>
     </div></div>
     <div class="card"><div class="panel-head"><h2>Divisão do dinheiro</h2></div><div class="panel-body">
       <table><thead><tr><th></th><th class="r">Torneio</th><th class="r">Cash</th></tr></thead><tbody>
@@ -1072,7 +1079,6 @@ app.addEventListener("change", e => {
 const RENDER = { painel: renderPainel, ranking: renderRanking, etapas: renderEtapas, caixa: renderCaixa, admin: () => adminLiberado() ? renderAdmin() : renderLogin() };
 function go(tab, push = true) {
   if (!RENDER[tab]) tab = "painel";
-  if (tab === "admin") document.getElementById("t-admin").hidden = false;
   apagar = null;
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
   RENDER[tab]();
@@ -1097,6 +1103,7 @@ app.addEventListener("click", e => {
 
 const root = document.documentElement;
 try { const t = localStorage.getItem("limpers-tema"); if (t) root.dataset.theme = t; } catch (e) {}
+document.getElementById("t-admin").addEventListener("click", () => go("admin"));
 document.getElementById("themeBtn").addEventListener("click", () => {
   const atual = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   root.dataset.theme = atual === "dark" ? "light" : "dark";
