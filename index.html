@@ -41,7 +41,7 @@ button,input{font:inherit;color:inherit}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--yellow);color:var(--yellow-ink)}
 .top-in,.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .top-in{display:flex;align-items:center;gap:20px;height:60px}
-.wm{font-weight:800;font-size:26px;letter-spacing:-.045em;line-height:1;white-space:nowrap;display:inline-flex;align-items:baseline;color:var(--yellow-ink)}
+.wm{background:none;border:0;padding:0;cursor:pointer;font-family:var(--font-ui);font-weight:800;font-size:26px;letter-spacing:-.045em;line-height:1;white-space:nowrap;display:inline-flex;align-items:baseline;color:var(--yellow-ink)}
 .wm i{display:inline-block;width:.26em;height:.26em;border-radius:50%;background:var(--red);margin:0 .03em 0 .05em}
 .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
 .tabs::-webkit-scrollbar{display:none}
@@ -246,7 +246,7 @@ footer{color:var(--faint);font-size:12px;display:flex;justify-content:space-betw
 
 <header class="top">
   <div class="top-in">
-    <span class="wm" aria-label="limper's club">limper’s<i></i>club</span>
+    <button class="wm" id="logoBtn" aria-label="limper's club, voltar para o Painel">limper’s<i></i>club</button>
     <nav class="tabs" role="tablist" aria-label="Seções">
       <button class="tab" role="tab" data-tab="painel" id="t-painel">Painel</button>
       <button class="tab" role="tab" data-tab="ranking" id="t-ranking">Ranking</button>
@@ -489,7 +489,8 @@ function recalcular() {
 }
 
 /* ===================== formatação ===================== */
-const brl = v => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
+// valores sempre arredondados, sem centavos (os cálculos continuam exatos)
+const brl = v => Math.round(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const pct = v => Math.round(v * 100) + "%";
 const dt = s => { const [y, m, d] = s.split("-"); return `${d}/${m}/${y}`; };
 const dtShort = s => { const [, m, d] = s.split("-"); return `${d}/${m}`; };
@@ -734,7 +735,7 @@ function renderCaixa() {
   </section>
   <section class="card" style="margin-top:16px">
     <div class="panel-head"><h2>Entradas e saídas por mês</h2>
-      <span class="meta" style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill" style="--c:var(--yellow)">Entradas</span><span class="pill" style="--c:var(--s2)">Saídas</span><span class="pill" style="--c:var(--red)">Saldo acumulado</span></span></div>
+      <span class="meta" style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill" style="--c:var(--yellow)">Entradas</span><span class="pill" style="--c:var(--red)">Saídas</span><span class="pill" style="--c:var(--s1)">Saldo acumulado</span></span></div>
     <div class="panel-body">${graficoMensal(mov)}</div>
   </section>
   <section class="card" style="margin-top:16px">
@@ -765,25 +766,26 @@ function graficoMensal(mov) {
     return { k, e, s, acc };
   });
   const W = 900, H = 280, pl = 56, pr = 10, pt = 14, pb = 34;
-  const hi = Math.max(...M.map(m => Math.max(m.e, m.s, m.acc))), lo = Math.min(0, ...M.map(m => m.acc));
+  // entradas sobem a partir do zero, saídas descem (negativas)
+  const hi = Math.max(...M.map(m => Math.max(m.e, m.acc))), lo = Math.min(0, ...M.map(m => Math.min(-m.s, m.acc)));
   const step = niceStep(hi - lo), max = Math.ceil(hi / step) * step, min = Math.floor(lo / step) * step;
-  const iw = W - pl - pr, ih = H - pt - pb, slot = iw / M.length, bw = Math.min(14, slot * 0.32);
+  const iw = W - pl - pr, ih = H - pt - pb, slot = iw / M.length, bw = Math.min(22, slot * 0.5);
   const y = v => pt + (max - v) / (max - min) * ih;
   let g = "";
   for (let t = min; t <= max; t += step) g += `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" ${t ? 'stroke-dasharray="2 4"' : ""}/><text x="${pl - 8}" y="${y(t) + 4}" text-anchor="end">${t.toLocaleString("pt-BR")}</text>`;
   const bars = M.map((m, i) => {
     const cx = pl + slot * (i + .5);
     const [yy, mm] = m.k.split("-");
-    return `<rect x="${cx - bw - 1}" y="${y(m.e)}" width="${bw}" height="${y(0) - y(m.e)}" fill="var(--yellow)" rx="2"><title>${MESES[mm - 1]}/${yy} · entradas ${brl(m.e)}</title></rect>
-      <rect x="${cx + 1}" y="${y(m.s)}" width="${bw}" height="${y(0) - y(m.s)}" fill="var(--s2)" rx="2"><title>${MESES[mm - 1]}/${yy} · saídas ${brl(m.s)}</title></rect>
+    return `<rect x="${cx - bw / 2}" y="${y(m.e)}" width="${bw}" height="${y(0) - y(m.e)}" fill="var(--yellow)" rx="2"><title>${MESES[mm - 1]}/${yy} · entradas ${brl(m.e)}</title></rect>
+      <rect x="${cx - bw / 2}" y="${y(0)}" width="${bw}" height="${y(-m.s) - y(0)}" fill="var(--red)" rx="2"><title>${MESES[mm - 1]}/${yy} · saídas −${brl(m.s)}</title></rect>
       ${i % 2 === 0 || M.length < 13 ? `<text x="${cx}" y="${H - 18}" text-anchor="middle">${MESES[mm - 1]}</text>` : ""}
       ${mm === "01" || i === 0 ? `<text x="${cx}" y="${H - 4}" text-anchor="middle" style="fill:var(--faint)">${yy}</text>` : ""}`;
   }).join("");
   const line = M.map((m, i) => `${pl + slot * (i + .5)},${y(m.acc)}`).join(" ");
   const L = M[M.length - 1], lx = pl + slot * (M.length - .5);
   return `<div class="tbl-wrap"><svg class="chart" style="min-width:640px" viewBox="0 0 ${W} ${H}" role="img" aria-label="Entradas, saídas e saldo por mês">${g}${bars}
-    <polyline points="${line}" fill="none" stroke="var(--red)" stroke-width="2"/>
-    ${M.map((m, i) => `<circle cx="${pl + slot * (i + .5)}" cy="${y(m.acc)}" r="${i === M.length - 1 ? 4.5 : 2.2}" fill="${i === M.length - 1 ? "var(--red)" : "var(--surface)"}" stroke="var(--red)" stroke-width="1.5"><title>saldo ${brl(m.acc)}</title></circle>`).join("")}
+    <polyline points="${line}" fill="none" stroke="var(--s1)" stroke-width="2"/>
+    ${M.map((m, i) => `<circle cx="${pl + slot * (i + .5)}" cy="${y(m.acc)}" r="${i === M.length - 1 ? 4.5 : 2.2}" fill="${i === M.length - 1 ? "var(--s1)" : "var(--surface)"}" stroke="var(--s1)" stroke-width="1.5"><title>saldo ${brl(m.acc)}</title></circle>`).join("")}
     <text x="${lx - 8}" y="${y(L.acc) - 10}" text-anchor="end" style="fill:var(--fg);font-weight:600">${brl(L.acc)}</text>
   </svg></div>`;
 }
@@ -1130,6 +1132,7 @@ app.addEventListener("click", e => {
 const root = document.documentElement;
 try { const t = localStorage.getItem("limpers-tema"); if (t) root.dataset.theme = t; } catch (e) {}
 document.getElementById("t-admin").addEventListener("click", () => go("admin"));
+document.getElementById("logoBtn").addEventListener("click", () => go("painel"));
 document.getElementById("themeBtn").addEventListener("click", () => {
   const atual = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   root.dataset.theme = atual === "dark" ? "light" : "dark";
