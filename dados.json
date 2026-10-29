@@ -1,41 +1,532 @@
 {
- "jogadores": ["Ale","Arruda","Braum","Castro","Codak","Felipe P.","Gabriel","Gezes","Japa","Lorenzo","Mathz","Muniz","Pasqual","Pavani","Pedrão","Rafields","Romasi","Ryan","Samugim","Teng","VT","Vtzinho"],
+ "jogadores": [
+  "Ale",
+  "Arruda",
+  "Braum",
+  "Castro",
+  "Codak",
+  "Felipe P.",
+  "Gabriel",
+  "Gezes",
+  "Japa",
+  "Lorenzo",
+  "Mathz",
+  "Muniz",
+  "Pasqual",
+  "Pavani",
+  "Pedrão",
+  "Rafields",
+  "Romasi",
+  "Ryan",
+  "Samugim",
+  "Teng",
+  "VT",
+  "Vtzinho",
+  "Sacchi",
+  "Baguera"
+ ],
  "etapas": [
-  {"data":"2025-11-23","nome":"Torneio Aniversário","pontos":{"Muniz":90,"Japa":75,"Castro":60,"Pasqual":40,"Mathz":30,"Arruda":10,"Gabriel":10,"Lorenzo":10,"Teng":10,"VT":10,"Ale":5,"Codak":5,"Gezes":5,"Pedrão":5,"Samugim":5}},
-  {"data":"2025-12-14","pontos":{"Lorenzo":75,"Teng":75,"Arruda":60,"Castro":40,"Muniz":30,"Mathz":10,"Pasqual":10,"Pedrão":10,"Samugim":10,"Romasi":10}},
-  {"data":"2026-01-18","pontos":{"Japa":75,"Muniz":75,"Vtzinho":60,"Castro":40,"Arruda":30,"Lorenzo":10,"Pedrão":10,"Samugim":10,"Felipe P.":10,"Rafields":10,"Gezes":5,"Mathz":5,"Pasqual":5,"Pavani":5,"Ryan":5}},
-  {"data":"2026-03-01","pontos":{"Arruda":75,"Castro":75,"Pasqual":60,"Romasi":40,"Mathz":30,"Lorenzo":10,"Muniz":10,"Pedrão":10,"Samugim":10,"Teng":10}},
-  {"data":"2026-03-21","pontos":{"Lorenzo":90,"Teng":75,"Pedrão":60,"Muniz":40,"Arruda":30,"Japa":10,"Mathz":10,"Samugim":10,"Rafields":10}},
-  {"data":"2026-04-02","pontos":{"Lorenzo":75,"Pedrão":40,"Romasi":40,"Teng":30,"Arruda":10,"Mathz":10,"Muniz":10,"Pasqual":10,"Braum":10,"Codak":5,"Japa":5,"Samugim":5,"Rafields":5}},
-  {"data":"2026-04-26","pontos":{"Mathz":75,"Arruda":60,"Japa":60,"Pedrão":40,"Lorenzo":30,"Muniz":10,"Pasqual":10,"Samugim":10,"Romasi":10,"Rafields":10}},
-  {"data":"2026-05-15","pontos":{"Japa":60,"Lorenzo":60,"Teng":60,"Rafields":40,"Pasqual":30,"Arruda":10,"Castro":10,"Mathz":10,"Muniz":10,"Codak":5,"Pedrão":5}},
-  {"data":"2026-05-29","pontos":{"Mathz":75,"Pedrão":75,"Castro":60,"Japa":40,"Rafields":30,"Arruda":10,"Lorenzo":10,"Muniz":10,"Pasqual":10,"Teng":10}},
-  {"data":"2026-06-04","pontos":{"Lorenzo":60,"Muniz":60,"Teng":60,"Arruda":40,"Rafields":30,"Japa":10,"Pedrão":10,"Mathz":5}},
-  {"data":"2026-06-26","pontos":{"Arruda":60,"Lorenzo":60,"Muniz":60,"Rafields":40,"Japa":30,"Mathz":10,"Pasqual":10,"Pedrão":10,"Samugim":10}},
-  {"data":"2026-07-08","pontos":{"Arruda":75,"Mathz":75,"Japa":60,"Teng":40,"Pasqual":30,"Castro":10,"Lorenzo":10,"Muniz":10,"Pedrão":10,"Rafields":10}},
-  {"data":"2026-07-31","pontos":{"Teng":75,"Pasqual":60,"Japa":40,"Lorenzo":30,"Arruda":10,"Mathz":10,"Muniz":10,"Rafields":10}},
-  {"data":"2026-08-14","pontos":{"Lorenzo":40,"Muniz":40,"Pedrão":40,"Japa":10,"Pasqual":10,"Teng":10,"Rafields":10,"Arruda":5,"Mathz":5}},
-  {"data":"2026-09-04","pontos":{"Lorenzo":60,"Pedrão":60,"Samugim":60,"Mathz":40,"Pasqual":30,"Arruda":10,"Japa":10,"Muniz":10,"Romasi":10,"Rafields":10}},
-  {"data":"2026-10-02","pontos":{"Mathz":40,"Muniz":40,"Pasqual":40,"Lorenzo":30,"Arruda":10,"Castro":10,"Teng":10}},
-  {"data":"2026-10-23","pontos":{"Arruda":40,"Lorenzo":40,"Teng":40,"Pasqual":30,"Mathz":10,"Muniz":10,"Pedrão":10}}
+  {
+   "data": "2025-11-23",
+   "nome": "Torneio Aniversário",
+   "pontos": {
+    "Muniz": 90,
+    "Japa": 75,
+    "Castro": 60,
+    "Pasqual": 40,
+    "Mathz": 30,
+    "Arruda": 10,
+    "Gabriel": 10,
+    "Lorenzo": 10,
+    "Teng": 10,
+    "VT": 10,
+    "Ale": 5,
+    "Codak": 5,
+    "Gezes": 5,
+    "Pedrão": 5,
+    "Samugim": 5
+   }
+  },
+  {
+   "data": "2025-12-14",
+   "pontos": {
+    "Lorenzo": 75,
+    "Teng": 75,
+    "Arruda": 60,
+    "Castro": 40,
+    "Muniz": 30,
+    "Mathz": 10,
+    "Pasqual": 10,
+    "Pedrão": 10,
+    "Samugim": 10,
+    "Romasi": 10
+   }
+  },
+  {
+   "data": "2026-01-18",
+   "pontos": {
+    "Japa": 75,
+    "Muniz": 75,
+    "Vtzinho": 60,
+    "Castro": 40,
+    "Arruda": 30,
+    "Lorenzo": 10,
+    "Pedrão": 10,
+    "Samugim": 10,
+    "Felipe P.": 10,
+    "Rafields": 10,
+    "Gezes": 5,
+    "Mathz": 5,
+    "Pasqual": 5,
+    "Pavani": 5,
+    "Ryan": 5
+   }
+  },
+  {
+   "data": "2026-03-01",
+   "pontos": {
+    "Arruda": 75,
+    "Castro": 75,
+    "Pasqual": 60,
+    "Romasi": 40,
+    "Mathz": 30,
+    "Lorenzo": 10,
+    "Muniz": 10,
+    "Pedrão": 10,
+    "Samugim": 10,
+    "Teng": 10
+   }
+  },
+  {
+   "data": "2026-03-21",
+   "pontos": {
+    "Lorenzo": 90,
+    "Teng": 75,
+    "Pedrão": 60,
+    "Muniz": 40,
+    "Arruda": 30,
+    "Japa": 10,
+    "Mathz": 10,
+    "Samugim": 10,
+    "Rafields": 10
+   }
+  },
+  {
+   "data": "2026-04-02",
+   "pontos": {
+    "Lorenzo": 75,
+    "Pedrão": 40,
+    "Romasi": 40,
+    "Teng": 30,
+    "Arruda": 10,
+    "Mathz": 10,
+    "Muniz": 10,
+    "Pasqual": 10,
+    "Braum": 10,
+    "Codak": 5,
+    "Japa": 5,
+    "Samugim": 5,
+    "Rafields": 5
+   }
+  },
+  {
+   "data": "2026-04-26",
+   "pontos": {
+    "Mathz": 75,
+    "Arruda": 60,
+    "Japa": 60,
+    "Pedrão": 40,
+    "Lorenzo": 30,
+    "Muniz": 10,
+    "Pasqual": 10,
+    "Samugim": 10,
+    "Romasi": 10,
+    "Rafields": 10
+   }
+  },
+  {
+   "data": "2026-05-15",
+   "pontos": {
+    "Japa": 60,
+    "Lorenzo": 60,
+    "Teng": 60,
+    "Rafields": 40,
+    "Pasqual": 30,
+    "Arruda": 10,
+    "Castro": 10,
+    "Mathz": 10,
+    "Muniz": 10,
+    "Codak": 5,
+    "Pedrão": 5
+   }
+  },
+  {
+   "data": "2026-05-29",
+   "pontos": {
+    "Mathz": 75,
+    "Pedrão": 75,
+    "Castro": 60,
+    "Japa": 40,
+    "Rafields": 30,
+    "Arruda": 10,
+    "Lorenzo": 10,
+    "Muniz": 10,
+    "Pasqual": 10,
+    "Teng": 10
+   }
+  },
+  {
+   "data": "2026-06-04",
+   "pontos": {
+    "Lorenzo": 60,
+    "Muniz": 60,
+    "Teng": 60,
+    "Arruda": 40,
+    "Rafields": 30,
+    "Japa": 10,
+    "Pedrão": 10,
+    "Mathz": 5
+   }
+  },
+  {
+   "data": "2026-06-26",
+   "pontos": {
+    "Arruda": 60,
+    "Lorenzo": 60,
+    "Muniz": 60,
+    "Rafields": 40,
+    "Japa": 30,
+    "Mathz": 10,
+    "Pasqual": 10,
+    "Pedrão": 10,
+    "Samugim": 10
+   }
+  },
+  {
+   "data": "2026-07-08",
+   "pontos": {
+    "Arruda": 75,
+    "Mathz": 75,
+    "Japa": 60,
+    "Teng": 40,
+    "Pasqual": 30,
+    "Castro": 10,
+    "Lorenzo": 10,
+    "Muniz": 10,
+    "Pedrão": 10,
+    "Rafields": 10
+   }
+  },
+  {
+   "data": "2026-07-31",
+   "pontos": {
+    "Teng": 75,
+    "Pasqual": 60,
+    "Japa": 40,
+    "Lorenzo": 30,
+    "Arruda": 10,
+    "Mathz": 10,
+    "Muniz": 10,
+    "Rafields": 10
+   }
+  },
+  {
+   "data": "2026-08-14",
+   "pontos": {
+    "Lorenzo": 40,
+    "Muniz": 40,
+    "Pedrão": 40,
+    "Japa": 10,
+    "Pasqual": 10,
+    "Teng": 10,
+    "Rafields": 10,
+    "Arruda": 5,
+    "Mathz": 5
+   }
+  },
+  {
+   "data": "2026-09-04",
+   "pontos": {
+    "Lorenzo": 60,
+    "Pedrão": 60,
+    "Samugim": 60,
+    "Mathz": 40,
+    "Pasqual": 30,
+    "Arruda": 10,
+    "Japa": 10,
+    "Muniz": 10,
+    "Romasi": 10,
+    "Rafields": 10
+   }
+  },
+  {
+   "data": "2026-10-02",
+   "pontos": {
+    "Mathz": 40,
+    "Muniz": 40,
+    "Pasqual": 40,
+    "Lorenzo": 30,
+    "Arruda": 10,
+    "Castro": 10,
+    "Teng": 10
+   }
+  },
+  {
+   "data": "2026-10-23",
+   "pontos": {
+    "Arruda": 40,
+    "Lorenzo": 40,
+    "Teng": 40,
+    "Pasqual": 30,
+    "Mathz": 10,
+    "Muniz": 10,
+    "Pedrão": 10
+   }
+  }
  ],
  "entradas": [
-  ["2025-04-06","Torneio",80],["2025-04-11","Torneio",60],["2025-05-18","Torneio",80],["2025-05-23","Torneio",40],
-  ["2025-06-08","Torneio",60],["2025-06-18","Torneio",90],["2025-06-27","Torneio",85],["2025-07-04","Torneio",40],
-  ["2025-07-28","Torneio",120],["2025-08-29","Torneio",110],["2025-09-06","Cash",84],["2025-09-13","Cash",58],
-  ["2025-09-19","Torneio e Cash",94],["2025-09-26","Cash",79],["2025-10-03","Torneio",80],["2025-10-10","Torneio e Cash",176],
-  ["2025-10-23","Cash",42],["2025-10-30","Cash",24],["2025-11-23","Torneio Aniversário",300],["2025-12-14","Torneio",100],
-  ["2026-01-04","Cash",60],["2026-01-18","Torneio",130],["2026-01-31","Cash",45],["2026-02-27","Cash",80],
-  ["2026-03-01","Torneio e Cash",120],["2026-03-21","Torneio",150],["2026-04-02","Torneio",200],["2026-04-26","Torneio",160],
-  ["2026-05-15","Torneio e Cash",380],["2026-05-29","Torneio e Cash",235],["2026-06-04","Torneio",100],["2026-06-26","Torneio",160],
-  ["2026-07-08","Torneio e Cash",370],["2026-07-31","Torneio",140],["2026-08-14","Torneio",250],["2026-08-14","Cash",80],
-  ["2026-09-04","Torneio",150],["2026-10-02","Torneio",160],["2026-10-02","Cash",90],["2026-10-23","Torneio",170],
-  ["2026-10-23","Cash",120]
+  [
+   "2025-04-06",
+   "Torneio",
+   80
+  ],
+  [
+   "2025-04-11",
+   "Torneio",
+   60
+  ],
+  [
+   "2025-05-18",
+   "Torneio",
+   80
+  ],
+  [
+   "2025-05-23",
+   "Torneio",
+   40
+  ],
+  [
+   "2025-06-08",
+   "Torneio",
+   60
+  ],
+  [
+   "2025-06-18",
+   "Torneio",
+   90
+  ],
+  [
+   "2025-06-27",
+   "Torneio",
+   85
+  ],
+  [
+   "2025-07-04",
+   "Torneio",
+   40
+  ],
+  [
+   "2025-07-28",
+   "Torneio",
+   120
+  ],
+  [
+   "2025-08-29",
+   "Torneio",
+   110
+  ],
+  [
+   "2025-09-06",
+   "Cash",
+   84
+  ],
+  [
+   "2025-09-13",
+   "Cash",
+   58
+  ],
+  [
+   "2025-09-19",
+   "Torneio e Cash",
+   94
+  ],
+  [
+   "2025-09-26",
+   "Cash",
+   79
+  ],
+  [
+   "2025-10-03",
+   "Torneio",
+   80
+  ],
+  [
+   "2025-10-10",
+   "Torneio e Cash",
+   176
+  ],
+  [
+   "2025-10-23",
+   "Cash",
+   42
+  ],
+  [
+   "2025-10-30",
+   "Cash",
+   24
+  ],
+  [
+   "2025-11-23",
+   "Torneio Aniversário",
+   300
+  ],
+  [
+   "2025-12-14",
+   "Torneio",
+   100
+  ],
+  [
+   "2026-01-04",
+   "Cash",
+   60
+  ],
+  [
+   "2026-01-18",
+   "Torneio",
+   130
+  ],
+  [
+   "2026-01-31",
+   "Cash",
+   45
+  ],
+  [
+   "2026-02-27",
+   "Cash",
+   80
+  ],
+  [
+   "2026-03-01",
+   "Torneio e Cash",
+   120
+  ],
+  [
+   "2026-03-21",
+   "Torneio",
+   150
+  ],
+  [
+   "2026-04-02",
+   "Torneio",
+   200
+  ],
+  [
+   "2026-04-26",
+   "Torneio",
+   160
+  ],
+  [
+   "2026-05-15",
+   "Torneio e Cash",
+   380
+  ],
+  [
+   "2026-05-29",
+   "Torneio e Cash",
+   235
+  ],
+  [
+   "2026-06-04",
+   "Torneio",
+   100
+  ],
+  [
+   "2026-06-26",
+   "Torneio",
+   160
+  ],
+  [
+   "2026-07-08",
+   "Torneio e Cash",
+   370
+  ],
+  [
+   "2026-07-31",
+   "Torneio",
+   140
+  ],
+  [
+   "2026-08-14",
+   "Torneio",
+   250
+  ],
+  [
+   "2026-08-14",
+   "Cash",
+   80
+  ],
+  [
+   "2026-09-04",
+   "Torneio",
+   150
+  ],
+  [
+   "2026-10-02",
+   "Torneio",
+   160
+  ],
+  [
+   "2026-10-02",
+   "Cash",
+   90
+  ],
+  [
+   "2026-10-23",
+   "Torneio",
+   170
+  ],
+  [
+   "2026-10-23",
+   "Cash",
+   120
+  ]
  ],
  "saidas": [
-  ["2025-05-19","Fichas/Time Bank",158],["2025-07-20","Cadeiras",300],["2025-09-01","Baralhos",112],
-  ["2025-10-06","Mesa/Fichas",2380],["2025-11-24","Maleta Nova",800],["2025-12-22","Baralhos",118],
-  ["2026-06-28","Baralhos e Rack",180]
+  [
+   "2025-05-19",
+   "Fichas/Time Bank",
+   158
+  ],
+  [
+   "2025-07-20",
+   "Cadeiras",
+   300
+  ],
+  [
+   "2025-09-01",
+   "Baralhos",
+   112
+  ],
+  [
+   "2025-10-06",
+   "Mesa/Fichas",
+   2380
+  ],
+  [
+   "2025-11-24",
+   "Maleta Nova",
+   800
+  ],
+  [
+   "2025-12-22",
+   "Baralhos",
+   118
+  ],
+  [
+   "2026-06-28",
+   "Baralhos e Rack",
+   180
+  ]
  ],
  "retiradas": [],
  "atualizadoEm": "2026-10-29"
