@@ -274,9 +274,21 @@
   },
   {
    "data": "2026-10-23",
-   "acordo": ["Arruda", "Lorenzo", "Sacchi", "Teng"],
+   "acordo": [
+    "Arruda",
+    "Lorenzo",
+    "Sacchi",
+    "Teng"
+   ],
    "fora": 0,
-   "posicoes": { "Pasqual": 5, "Muniz": 6, "Mathz": 7, "Leo": 8, "Baguera": 9, "Pedrão": 10 },
+   "posicoes": {
+    "Pasqual": 5,
+    "Muniz": 6,
+    "Mathz": 7,
+    "Leo": 8,
+    "Baguera": 9,
+    "Pedrão": 10
+   },
    "pontos": {
     "Arruda": 40,
     "Lorenzo": 40,
@@ -496,11 +508,6 @@
    "2026-10-23",
    "Cash",
    120
-  ],
-  [
-   "2026-10-29",
-   "Torneio",
-   100
   ]
  ],
  "saidas": [
