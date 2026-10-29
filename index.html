@@ -343,7 +343,7 @@ const CLUBE = {
   divisaoSobra: { caixa: 0.50, ranking: 0.30, jackpot: 0.20 },
   divisao: {
     torneio: { ranking: 0.40, caixa: 0.30, organizacao: 0.30 },
-    cash:    { jackpot: 0.50, caixa: 0.25, organizacao: 0.25 }
+    cash:    { jackpot: 0.60, caixa: 0.20, organizacao: 0.20 }
   },
 
   // Saques dos potes (prêmio do ranking, jackpot pago, repasse à organização)
@@ -539,7 +539,7 @@ function renderPainel() {
     <div class="card kpi money">
       <div class="kpi-top">Caixa <span class="badge">do clube</span></div>
       <div class="kpi-val num">${brl(P.caixa)}</div>
-      <div class="kpi-foot">${brl(caixa.sobraQuitacao)} que sobrou da quitação + 30% dos torneios e 25% do cash</div>
+      <div class="kpi-foot">${brl(caixa.sobraQuitacao)} que sobrou da quitação + ${pct(CLUBE.divisao.torneio.caixa)} dos torneios e ${pct(CLUBE.divisao.cash.caixa)} do cash</div>
     </div>
     <div class="card kpi">
       <div class="kpi-top">Premiação Rank do Torneio</div>
@@ -968,7 +968,7 @@ function renderAdmin() {
   </section>
 
   <section class="card" style="margin-top:16px" id="lancarCash">
-    <div class="panel-head"><h2>Lançar cash</h2><span class="meta">não conta como etapa · 50% jackpot, 25% caixa, 25% organização</span></div>
+    <div class="panel-head"><h2>Lançar cash</h2><span class="meta">não conta como etapa · ${pct(CLUBE.divisao.cash.jackpot)} jackpot, ${pct(CLUBE.divisao.cash.caixa)} caixa, ${pct(CLUBE.divisao.cash.organizacao)} organização</span></div>
     <div class="panel-body adm-form">
       <div class="adm-row">
         <div class="field small"><label for="c-data">Data</label><input id="c-data" type="date" value="${hoje()}"></div>
