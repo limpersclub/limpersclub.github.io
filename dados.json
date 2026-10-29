@@ -286,37 +286,6 @@
     "Baguera": 10,
     "Leo": 10
    }
-  },
-  {
-   "data": "2026-10-29",
-   "acordo": [
-    "Arruda",
-    "Lorenzo"
-   ],
-   "fora": 0,
-   "posicoes": {
-    "Castro": 9,
-    "Japa": 5,
-    "Mathz": 6,
-    "Muniz": 3,
-    "Pasqual": 8,
-    "Pedrão": 7,
-    "Rafields": 10,
-    "Teng": 4
-   },
-   "pontos": {
-    "Arruda": 75,
-    "Castro": 10,
-    "Japa": 30,
-    "Lorenzo": 75,
-    "Mathz": 10,
-    "Muniz": 60,
-    "Pasqual": 10,
-    "Pedrão": 10,
-    "Rafields": 10,
-    "Teng": 40
-   },
-   "nome": "Etapa teste"
   }
  ],
  "entradas": [
