@@ -251,6 +251,7 @@ footer{color:var(--faint);font-size:12px;display:flex;justify-content:space-betw
       <button class="tab" role="tab" data-tab="painel" id="t-painel">Painel</button>
       <button class="tab" role="tab" data-tab="ranking" id="t-ranking">Ranking</button>
       <button class="tab" role="tab" data-tab="etapas" id="t-etapas">Etapas</button>
+      <button class="tab" role="tab" data-tab="cash" id="t-cash">Cash</button>
       <button class="tab" role="tab" data-tab="caixa" id="t-caixa">Caixa</button>
     </nav>
     <button class="tab adm-tab" data-tab="admin" id="t-admin" aria-label="Área do admin">
@@ -416,9 +417,12 @@ function calcular(n = CLUBE.etapas.length) {
         : i && r.pts === res[i - 1].pts ? res[i - 1].pos : i + 1;
     });
     res.sort((a, b) => a.pos - b.pos || a.nome.localeCompare(b.nome));
-    const doDia = entradas.filter(x => x.data === e.data);
+    // a etapa é só o torneio: o cash do mesmo dia fica na aba Cash
+    // (antes da quitação o valor da noite era um só, torneio e cash juntos)
+    const doDia = entradas.filter(x => x.data === e.data && tipoEntrada(x.descricao) !== "cash");
     const arrec = sum(doDia.map(x => x.valor));
-    const tipo = doDia.map(x => x.descricao).join(" + ") || "Torneio";
+    const misto = doDia.some(x => tipoEntrada(x.descricao) === "misto");
+    const tipo = e.nome || "Torneio";
     res.forEach(r => {
       const s = st[r.nome] ||= { nome: r.nome, pts: 0, etapas: 0, vitorias: 0, acordos: 0, podios: 0, melhor: null, hist: [] };
       s.pts += r.pts; s.etapas++;
@@ -427,7 +431,7 @@ function calcular(n = CLUBE.etapas.length) {
       if (s.melhor === null || r.pos < s.melhor) s.melhor = r.pos;
       s.hist.push({ etapa: idx + 1, data: e.data, pos: r.pos, field: res.length, pts: r.pts, acordo: r.acordo ? L.acordo : 0 });
     });
-    return { ...e, num: idx + 1, res, arrec, tipo, acordo: L.acordo, convidados: L.convidados || 0, confere: L.confere };
+    return { ...e, num: idx + 1, res, arrec, misto, tipo, acordo: L.acordo, convidados: L.convidados || 0, confere: L.confere };
   });
   const ranking = Object.values(st).sort((a, b) => b.pts - a.pts || b.vitorias - a.vitorias || b.acordos - a.acordos || b.podios - a.podios || a.nome.localeCompare(b.nome));
   ranking.forEach((s, i) => s.rank = i && s.pts === ranking[i - 1].pts ? ranking[i - 1].rank : i + 1);
@@ -578,7 +582,7 @@ function renderPainel() {
   </section>
 
   <section class="card" style="margin-top:16px">
-    <div class="panel-head"><h2>Última etapa · ${dt(ult.data)}</h2><span class="meta">${esc(ult.tipo)} · ${ult.res.length} jogadores${ult.arrec ? " · " + brl(ult.arrec) + " no caixa" : ""}</span></div>
+    <div class="panel-head"><h2>Última etapa · ${dt(ult.data)}</h2><span class="meta">${ult.res.length} jogadores${ult.arrec ? " · Torneio " + brl(ult.arrec) : ""}</span></div>
     <div class="tbl-wrap">${tabelaEtapa(ult)}</div>
   </section>`;
 }
@@ -694,12 +698,35 @@ function renderEtapas() {
       <div class="etapa-f">
         <span class="tag num">${e.res.length} jogadores</span>
         ${e.acordo > 1 ? `<span class="tag">Acordo em ${e.acordo}</span>` : `<span class="tag">Venceu sozinho</span>`}
-        ${e.arrec ? `<span class="tag y num">Arrecadado ${brl(e.arrec)}</span>` : ""}
+        ${e.arrec ? `<span class="tag y num">${e.misto ? "Torneio e cash" : "Torneio"} ${brl(e.arrec)}</span>` : ""}
       </div>
       <button class="btn-sm" data-etapa="${e.num}" style="align-self:flex-start">Ver resultado completo</button>
     </article>`).join("")}
   </section>
   <section class="card" id="etapaDet" style="margin-top:16px" hidden></section>`;
+}
+
+/* ===================== Cash ===================== */
+// Noites de cash não são etapa: não pontuam no ranking, só alimentam o jackpot e o caixa
+function renderCash() {
+  const noites = MOV.filter(m => (m.t === "e" && tipoEntrada(m.descricao) === "cash") || (m.t === "r" && m.pote === "jackpot")).reverse();
+  const depois = noites.filter(m => m.t === "e" && m.fase === "divisao");
+  app.innerHTML = headHtml("Cash") + `
+  <section class="grid-3" style="margin-top:16px">
+    <div class="card kpi money"><div class="kpi-top">Jackpot do Cash</div><div class="kpi-val num">${brl(caixa.potes.jackpot)}</div></div>
+    <div class="card kpi"><div class="kpi-top">Arrecadado no cash</div><div class="kpi-val num">${brl(caixa.cash)}</div></div>
+    <div class="card kpi"><div class="kpi-top">Noites de cash</div><div class="kpi-val num">${depois.length}</div></div>
+  </section>
+  <section class="card" style="margin-top:16px">
+    <div class="panel-head"><h2>Noites de cash</h2></div>
+    <div class="tbl-wrap"><table class="wide">
+      <thead><tr><th>Data</th><th class="r">Arrecadado</th><th class="r"><span class="pill" style="--c:${COR_POTE.jackpot}">Jackpot do Cash</span></th><th class="r"><span class="pill" style="--c:${COR_POTE.caixa}">Caixa</span></th></tr></thead>
+      <tbody>${noites.map(m => m.t === "r"
+        ? `<tr><td class="num">${dt(m.data)}</td><td>${esc(m.descricao)} <span class="tag y">Jackpot pago</span></td><td class="r num"><span class="down">−${brl(m.valor)}</span></td><td class="r same">–</td></tr>`
+        : `<tr><td class="num">${dt(m.data)}</td><td class="r num">${brl(m.valor)}</td>
+          ${m.fase === "divisao" ? `<td class="r num">${brl(m.parts.jackpot || 0)}</td><td class="r num">${brl(m.parts.caixa || 0)}</td>` : `<td class="r" colspan="2"><span class="same">Quitação da dívida</span></td>`}</tr>`).join("")}
+      </tbody></table></div>
+  </section>`;
 }
 
 /* ===================== Caixa ===================== */
@@ -925,8 +952,8 @@ function renderAdmin() {
       </div>
       <div class="adm-row">
         <div class="field small"><label for="r-torneio">Arrecadado no torneio (R$)</label><input id="r-torneio" type="number" min="0" step="0.01" data-r="torneio" value="${esc(rascunho.torneio)}"></div>
-        <div class="field small"><label for="r-cash">Arrecadado no cash (R$)</label><input id="r-cash" type="number" min="0" step="0.01" data-r="cash" value="${esc(rascunho.cash)}"></div>
       </div>
+      <p class="note">O cash da noite é lançado separado, em “Lançar cash”, logo abaixo.</p>
       <p class="note">Coloque 1 em quem ganhou, ou em todos do acordo. No site, quem fez acordo aparece na posição do acordo (acordo de 4 → todos em 4º). Os demais continuam da posição seguinte, cada um no seu lugar, sem repetir (6º, 7º, 8º...).</p>
       <div class="players">
         ${ordenados.map(n => { const i = CLUBE.jogadores.indexOf(n), on = !!rascunho.jogou[n]; return `<div class="pl ${on ? "on" : ""}">
@@ -937,6 +964,17 @@ function renderAdmin() {
       </div>
       <div id="r-resumo">${resumoRascunho(R)}</div>
       <div class="adm-actions"><button class="ghost primary" data-acao="salvarEtapa">Salvar etapa</button><button class="btn-sm" data-acao="limparEtapa">Limpar</button></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:16px" id="lancarCash">
+    <div class="panel-head"><h2>Lançar cash</h2><span class="meta">não conta como etapa · 50% jackpot, 25% caixa, 25% organização</span></div>
+    <div class="panel-body adm-form">
+      <div class="adm-row">
+        <div class="field small"><label for="c-data">Data</label><input id="c-data" type="date" value="${hoje()}"></div>
+        <div class="field small"><label for="c-valor">Arrecadado no cash (R$)</label><input id="c-valor" type="number" min="0" step="0.01"></div>
+        <button class="ghost primary" data-acao="addCash" style="align-self:end">Salvar cash</button>
+      </div>
     </div>
   </section>
 
@@ -956,7 +994,7 @@ function renderAdmin() {
         <div class="adm-row">
           <div class="field small"><label for="m-data">Data</label><input id="m-data" type="date" value="${hoje()}"></div>
           <div class="field"><label for="m-tipo">Tipo</label><select id="m-tipo">
-            <option value="e:Torneio">Entrada · torneio</option><option value="e:Cash">Entrada · cash</option>
+            <option value="e:Torneio">Entrada · torneio</option>
             <option value="s:caixa">Saída do caixa · compra de material</option><option value="s:ranking">Saída do rank · prêmio do ranking</option>
             <option value="s:jackpot">Saída do jackpot · jackpot pago</option><option value="s:organizacao">Saída da organização</option></select></div>
         </div>
@@ -1037,11 +1075,16 @@ function acaoAdmin(acao) {
     const e = { data: rascunho.data, acordo: R.membros, fora: R.membros.length ? parseInt(rascunho.fora, 10) || 0 : 0, posicoes: R.posicoes, pontos: R.out };
     if (rascunho.nome.trim()) e.nome = rascunho.nome.trim();
     CLUBE.etapas.push(e);
-    const t = parseFloat(rascunho.torneio), c = parseFloat(rascunho.cash);
-    if (t > 0) CLUBE.entradas.push([rascunho.data, e.nome || "Torneio", t]);
-    if (c > 0) CLUBE.entradas.push([rascunho.data, "Cash", c]);
+    const t = parseFloat(rascunho.torneio);
+    // a descrição precisa ter "Torneio" para a divisão 40/30/30 reconhecer a entrada
+    if (t > 0) CLUBE.entradas.push([rascunho.data, e.nome && /torneio/i.test(e.nome) && !/cash/i.test(e.nome) ? e.nome : "Torneio", t]);
     avisoAdm = `Etapa de ${dt(rascunho.data)} salva com ${R.nomes.length} jogadores.`;
     rascunho = novoRascunho();
+  } else if (acao === "addCash") {
+    const data = val("c-data"), v = parseFloat(val("c-valor"));
+    if (!data || !(v > 0)) { avisoAdm = "Preencha a data e um valor de cash maior que zero."; return renderAdmin(); }
+    CLUBE.entradas.push([data, "Cash", v]);
+    avisoAdm = `Cash de ${dt(data)} salvo: ${brl(v)}.`;
   } else if (acao === "limparEtapa") {
     rascunho = novoRascunho();
   } else if (acao === "addJog") {
@@ -1103,7 +1146,7 @@ app.addEventListener("change", e => {
 });
 
 /* ===================== navegação ===================== */
-const RENDER = { painel: renderPainel, ranking: renderRanking, etapas: renderEtapas, caixa: renderCaixa, admin: () => adminLiberado() ? renderAdmin() : renderLogin() };
+const RENDER = { painel: renderPainel, ranking: renderRanking, etapas: renderEtapas, cash: renderCash, caixa: renderCaixa, admin: () => adminLiberado() ? renderAdmin() : renderLogin() };
 function go(tab, push = true) {
   if (!RENDER[tab]) tab = "painel";
   apagar = null;
@@ -1124,7 +1167,7 @@ app.addEventListener("click", e => {
   const et = e.target.closest("[data-etapa]");
   if (et) {
     const ev = D.etapas[+et.dataset.etapa - 1], box = document.getElementById("etapaDet");
-    box.innerHTML = `<div class="panel-head"><h2>Etapa ${ev.num} · ${dt(ev.data)}</h2><span class="meta">${esc(ev.tipo)}${ev.arrec ? " · " + brl(ev.arrec) : ""}</span></div><div class="tbl-wrap">${tabelaEtapa(ev)}</div>`;
+    box.innerHTML = `<div class="panel-head"><h2>Etapa ${ev.num} · ${dt(ev.data)}</h2><span class="meta">${ev.res.length} jogadores${ev.arrec ? ` · ${ev.misto ? "Torneio e cash" : "Torneio"} ${brl(ev.arrec)}` : ""}</span></div><div class="tbl-wrap">${tabelaEtapa(ev)}</div>`;
     box.hidden = false; box.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 });
