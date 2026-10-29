@@ -243,6 +243,16 @@ pre{font-family:var(--font-num);font-size:12px;background:var(--surface-2);borde
 .regras-jp ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:10px;color:var(--muted);max-width:75ch}
 .regras-jp b{color:var(--fg)}
 @media (max-width:800px){ .maos{grid-template-columns:repeat(2,minmax(0,1fr))} .mao-regras{grid-column:1 / -1} .roleta-grid{grid-template-columns:minmax(0,1fr)} }
+/* vencedores do jackpot */
+.vencedores{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.venc{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.venc.ultimo{background:var(--yellow);border-color:var(--yellow);color:var(--yellow-ink)}
+.venc-trofeu{font-size:22px;width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:var(--surface);color:var(--fg)}
+.venc.ultimo .venc-trofeu{background:var(--yellow-ink);color:var(--yellow)}
+.venc-info{display:flex;flex-direction:column;min-width:0}
+.venc-nome{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.venc-mao,.venc-data{font-size:12px;opacity:.75}
+.venc-valor{font-size:20px;font-weight:700}
 .card.editando{border-color:var(--yellow);box-shadow:inset 4px 0 0 var(--yellow)}
 .login{max-width:380px;margin:48px auto 0;padding:24px;display:flex;flex-direction:column;gap:14px}
 /* cards limpos: sem legendas */
@@ -272,9 +282,9 @@ footer{color:var(--faint);font-size:12px;display:flex;justify-content:space-betw
 
 <header class="top">
   <div class="top-in">
-    <button class="wm" id="logoBtn" aria-label="limper's club, voltar para o Painel">limper’s<i></i>club</button>
+    <button class="wm" id="logoBtn" aria-label="limper's club, voltar para a Home">limper’s<i></i>club</button>
     <nav class="tabs" role="tablist" aria-label="Seções">
-      <button class="tab" role="tab" data-tab="painel" id="t-painel">Painel</button>
+      <button class="tab" role="tab" data-tab="painel" id="t-painel">Home</button>
       <button class="tab" role="tab" data-tab="ranking" id="t-ranking">Ranking</button>
       <button class="tab" role="tab" data-tab="etapas" id="t-etapas">Etapas</button>
       <button class="tab" role="tab" data-tab="cash" id="t-cash">Cash</button>
@@ -560,13 +570,13 @@ function deltaHtml(s) {
   return d > 0 ? `<span class="delta up">▲ ${d}</span>` : d < 0 ? `<span class="delta down">▼ ${-d}</span>` : `<span class="delta same">–</span>`;
 }
 
-function headHtml(titulo, extra = "") {
-  const ult = D.etapas[D.etapas.length - 1];
+// temporada: só em Ranking e Etapas · membros: some em Roleta e Caixa
+function headHtml(titulo, extra = "", { temporada = false, membros = true } = {}) {
   return `<div class="head">
     <div>
-      <div class="eyebrow">Temporada desde ${dt(CLUBE.inicioTemporada)} · ${D.etapas.length} etapas</div>
+      ${temporada ? `<div class="eyebrow">Temporada desde ${dt(CLUBE.inicioTemporada)} · ${D.etapas.length} etapas</div>` : ""}
       <h1>${titulo}</h1>
-      <p class="sub">${CLUBE.jogadores.length} membros</p>
+      ${membros ? `<p class="sub">${CLUBE.jogadores.length} membros</p>` : ""}
     </div>${extra}
   </div>`;
 }
@@ -578,7 +588,7 @@ function renderPainel() {
   const P = caixa.potes;
   const segs = POTES_PUB.map(p => ({ lbl: NOME_POTE[p], v: P[p], col: COR_POTE[p] }));
 
-  app.innerHTML = headHtml("Painel", `<button class="ghost" data-go="ranking">Ver ranking completo</button>`) + `
+  app.innerHTML = headHtml("Home", `<button class="ghost" data-go="ranking">Ver ranking completo</button>`) + `
   <section class="grid-3" aria-label="Dinheiro do clube" style="margin-top:16px">
     <div class="card kpi money">
       <div class="kpi-top">Caixa <span class="badge">do clube</span></div>
@@ -669,7 +679,7 @@ const COLS = [
 const premioRank = rank => CLUBE.premiacaoRanking[rank - 1] ? r2(caixa.potes.ranking * CLUBE.premiacaoRanking[rank - 1]) : 0;
 
 function renderRanking() {
-  app.innerHTML = headHtml("Ranking") + `
+  app.innerHTML = headHtml("Ranking", "", { temporada: true }) + `
   <section class="podio3" style="margin-top:16px" aria-label="Premiação do top 3">
     ${D.ranking.filter(s => s.rank <= 3).map(s => `<button class="card podio-card p${s.rank}" data-ficha="${esc(s.nome)}">
       <span class="podio-pos">${s.rank}º lugar</span>
@@ -735,7 +745,7 @@ function heatmap() {
 
 /* ===================== Etapas ===================== */
 function renderEtapas() {
-  app.innerHTML = headHtml("Etapas") + `<section class="etapas" style="margin-top:16px">
+  app.innerHTML = headHtml("Etapas", "", { temporada: true }) + `<section class="etapas" style="margin-top:16px">
     ${[...D.etapas].reverse().map(e => `<article class="card etapa">
       <div class="etapa-h"><b>Etapa ${e.num}${e.nome ? " · " + esc(e.nome) : ""}</b><span>${dt(e.data)}</span></div>
       <div class="podium">${e.res.filter(r => r.acordo || r.pos <= 3).map(r => `<div>${medal(r.pos)}<span class="nm">${esc(r.nome)}</span><span class="num">${r.pts} pts</span></div>`).join("")}</div>
@@ -752,24 +762,27 @@ function renderEtapas() {
 
 /* ===================== Cash ===================== */
 // Noites de cash não são etapa: não pontuam no ranking, só alimentam o jackpot e o caixa
+// pagamentos do jackpot ficam em retiradas com a descrição "Nome · Mão"
+const vencedoresJackpot = () => CLUBE.retiradas.filter(r => r[1] === "jackpot")
+  .map(([data, , descricao, valor]) => { const [nome, ...resto] = descricao.split(" · "); return { data, nome, mao: resto.join(" · "), valor }; })
+  .sort((a, b) => b.data.localeCompare(a.data));
+
 function renderCash() {
-  const noites = MOV.filter(m => (m.t === "e" && tipoEntrada(m.descricao) === "cash") || (m.t === "r" && m.pote === "jackpot")).reverse();
-  const depois = noites.filter(m => m.t === "e" && m.fase === "divisao");
+  const noites = MOV.filter(m => m.t === "e" && tipoEntrada(m.descricao) === "cash" && m.fase === "divisao").length;
+  const V = vencedoresJackpot();
   app.innerHTML = headHtml("Cash") + `
-  <section class="grid-3" style="margin-top:16px">
+  <section class="split" style="margin-top:16px">
     <div class="card kpi money"><div class="kpi-top">Jackpot do Cash</div><div class="kpi-val num">${brl(caixa.potes.jackpot)}</div></div>
-    <div class="card kpi"><div class="kpi-top">Arrecadado no cash</div><div class="kpi-val num">${brl(caixa.cash)}</div></div>
-    <div class="card kpi"><div class="kpi-top">Noites de cash</div><div class="kpi-val num">${depois.length}</div></div>
+    <div class="card kpi"><div class="kpi-top">Noites de cash</div><div class="kpi-val num">${noites}</div></div>
   </section>
   <section class="card" style="margin-top:16px">
-    <div class="panel-head"><h2>Noites de cash</h2></div>
-    <div class="tbl-wrap"><table class="wide">
-      <thead><tr><th>Data</th><th class="r">Arrecadado</th><th class="r"><span class="pill" style="--c:${COR_POTE.jackpot}">Jackpot do Cash</span></th><th class="r"><span class="pill" style="--c:${COR_POTE.caixa}">Caixa</span></th></tr></thead>
-      <tbody>${noites.map(m => m.t === "r"
-        ? `<tr><td class="num">${dt(m.data)}</td><td>${esc(m.descricao)} <span class="tag y">Jackpot pago</span></td><td class="r num"><span class="down">−${brl(m.valor)}</span></td><td class="r same">–</td></tr>`
-        : `<tr><td class="num">${dt(m.data)}</td><td class="r num">${brl(m.valor)}</td>
-          ${m.fase === "divisao" ? `<td class="r num">${brl(m.parts.jackpot || 0)}</td><td class="r num">${brl(m.parts.caixa || 0)}</td>` : `<td class="r" colspan="2"><span class="same">Quitação da dívida</span></td>`}</tr>`).join("")}
-      </tbody></table></div>
+    <div class="panel-head"><h2>Vencedores do jackpot</h2>${V.length ? `<span class="meta num">${V.length} ${V.length > 1 ? "prêmios" : "prêmio"} · ${brl(sum(V.map(v => v.valor)))}</span>` : ""}</div>
+    <div class="panel-body">${V.length ? `<div class="vencedores">${V.map((v, i) => `<article class="venc ${i === 0 ? "ultimo" : ""}">
+        <span class="venc-trofeu" aria-hidden="true">${i === 0 ? "★" : "♠"}</span>
+        <div class="venc-info"><b class="venc-nome">${esc(v.nome)}</b><span class="venc-mao">${esc(v.mao || "Jackpot do Cash")}</span><span class="venc-data num">${dt(v.data)}</span></div>
+        <span class="venc-valor num">${brl(v.valor)}</span>
+      </article>`).join("")}</div>`
+      : `<p class="note" style="margin:0">Ninguém levou o jackpot ainda. O primeiro vencedor aparece aqui.</p>`}</div>
   </section>`;
 }
 
@@ -830,7 +843,7 @@ function renderRoleta() {
   const cfg = !verRegras && roleta.mao ? CLUBE.roletas[roleta.mod][roleta.mao] : null;
   const media = c => sum(c.fatias.map(([v, p]) => v * p)) / 100;
   const cores = cfg ? coresRoleta(cfg.fatias.length) : [];
-  app.innerHTML = headHtml("Roleta do Jackpot") + `
+  app.innerHTML = headHtml("Roleta do Jackpot", "", { membros: false }) + `
   <section class="card kpi money jp-kpi" style="margin-top:16px"><div class="kpi-top">Jackpot do Cash</div><div class="kpi-val num">${brl(J)}</div></section>
 
   <div class="seg" role="tablist" aria-label="Modalidade" style="margin-top:16px">
@@ -897,7 +910,7 @@ function pagarRoleta() {
   const nome = document.getElementById("jp-nome").value.trim();
   if (!nome) { document.getElementById("jp-nome").focus(); return; }
   const cfg = CLUBE.roletas[r.mod][r.mao];
-  CLUBE.retiradas.push([hoje(), "jackpot", `Jackpot ${cfg.nome} (${MODALIDADE[r.mod]}) · ${r.pct}% · ${nome}`, Math.round(r.valor)]);
+  CLUBE.retiradas.push([hoje(), "jackpot", `${nome} · ${cfg.nome} (${MODALIDADE[r.mod]}) · ${r.pct}%`, Math.round(r.valor)]);
   salvarDados();
   r.pago = nome;
   renderRoleta();
@@ -929,7 +942,7 @@ function tabelaDivisao(potes) {
 
 function renderCaixa() {
   const mov = MOV, P = caixa.potes;
-  app.innerHTML = headHtml("Caixa") + `
+  app.innerHTML = headHtml("Caixa", "", { membros: false }) + `
   <section class="grid-3" style="margin-top:16px">
     ${POTES_PUB.map(p => `<div class="card kpi ${p === "caixa" ? "money" : ""}"><div class="kpi-top">${NOME_POTE[p]}<span class="dot" style="background:${COR_POTE[p]}"></span></div><div class="kpi-val num">${brl(P[p])}</div></div>`).join("")}
   </section>
@@ -1182,6 +1195,22 @@ function renderAdmin() {
     </div>
   </section>
 
+  <section class="card" style="margin-top:16px" id="premioJackpot">
+    <div class="panel-head"><h2>Prêmio do jackpot</h2><span class="meta">jackpot agora: ${brl(caixa.potes.jackpot)} · aparece em “Vencedores do jackpot” na aba Cash</span></div>
+    <div class="panel-body adm-form">
+      <div class="adm-row">
+        <div class="field small"><label for="jp-data">Data</label><input id="jp-data" type="date" value="${hoje()}"></div>
+        <div class="field"><label for="jp-premiado">Premiado</label><input id="jp-premiado" list="jp-lista" placeholder="Nome de quem ganhou">
+          <datalist id="jp-lista">${CLUBE.jogadores.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist></div>
+        <div class="field"><label for="jp-mao">Mão</label><select id="jp-mao">
+          ${Object.keys(CLUBE.roletas).map(m => MAOS.map(k => `<option>${esc(CLUBE.roletas[m][k].nome)} (${MODALIDADE[m]})</option>`).join("")).join("")}
+          <option>Outro</option></select></div>
+        <div class="field small"><label for="jp-valor">Valor que sai do jackpot (R$)</label><input id="jp-valor" type="number" min="0" step="1"></div>
+        <button class="ghost primary" data-acao="addPremio" style="align-self:end">Registrar prêmio</button>
+      </div>
+    </div>
+  </section>
+
   <section class="split" style="margin-top:16px">
     <div class="card">
       <div class="panel-head"><h2>Jogadores</h2><span class="meta num">${CLUBE.jogadores.length} cadastrados</span></div>
@@ -1200,7 +1229,7 @@ function renderAdmin() {
           <div class="field"><label for="m-tipo">Tipo</label><select id="m-tipo">
             <option value="e:Torneio">Entrada · torneio</option>
             <option value="s:caixa">Saída do caixa · compra de material</option><option value="s:ranking">Saída do rank · prêmio do ranking</option>
-            <option value="s:jackpot">Saída do jackpot · jackpot pago</option><option value="s:organizacao">Saída da organização</option></select></div>
+<option value="s:organizacao">Saída da organização</option></select></div>
         </div>
         <div class="adm-row">
           <div class="field"><label for="m-desc">Descrição</label><input id="m-desc" placeholder="Ex.: Baralhos novos"></div>
@@ -1305,6 +1334,12 @@ function acaoAdmin(acao) {
     if (!data || !(v > 0)) { avisoAdm = "Preencha a data e um valor de cash maior que zero."; return renderAdmin(); }
     CLUBE.entradas.push([data, "Cash", v]);
     avisoAdm = `Cash de ${dt(data)} salvo: ${brl(v)}.`;
+  } else if (acao === "addPremio") {
+    const data = val("jp-data"), nome = val("jp-premiado"), mao = val("jp-mao"), v = parseFloat(val("jp-valor"));
+    if (!data || !nome || !(v > 0)) { avisoAdm = "Preencha a data, o premiado e um valor maior que zero."; return renderAdmin(); }
+    if (v > caixa.potes.jackpot + 0.5) { avisoAdm = `O valor passa do jackpot atual (${brl(caixa.potes.jackpot)}).`; return renderAdmin(); }
+    CLUBE.retiradas.push([data, "jackpot", mao === "Outro" ? nome : `${nome} · ${mao}`, v]);
+    avisoAdm = `Prêmio registrado: ${nome} levou ${brl(v)} do jackpot.`;
   } else if (acao === "limparEtapa") {
     rascunho = novoRascunho();
   } else if (acao === "addJog") {
