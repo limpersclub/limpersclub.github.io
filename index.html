@@ -206,6 +206,18 @@ pre{font-family:var(--font-num);font-size:12px;background:var(--surface-2);borde
 .x{background:none;border:1px solid transparent;border-radius:999px;cursor:pointer;color:var(--muted);padding:0 7px;font-size:13px}
 .x:hover{color:var(--neg)}
 .linkbtn{background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer;font-size:inherit}
+.podio3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.podio-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:18px;text-align:left;cursor:pointer;font:inherit;color:inherit;min-width:0}
+.podio-card:hover{border-color:var(--fg)}
+.podio-pos{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.podio-nome{font-size:24px;font-weight:700;letter-spacing:-.02em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podio-pts{color:var(--muted);font-size:13px}
+.podio-premio{margin-top:12px;display:flex;flex-direction:column}
+.podio-premio small{font-size:11px;color:var(--muted)}
+.podio-premio b{font-size:26px;letter-spacing:-.02em}
+.podio-card.p1{background:var(--yellow);border-color:var(--yellow);color:var(--yellow-ink)}
+.podio-card.p1 .podio-pos,.podio-card.p1 .podio-pts,.podio-card.p1 small{color:var(--yellow-ink);opacity:.7}
+@media (max-width:700px){ .podio3{grid-template-columns:minmax(0,1fr)} }
 .login{max-width:380px;margin:48px auto 0;padding:24px;display:flex;flex-direction:column;gap:14px}
 /* cards limpos: sem legendas */
 .kpi-foot,.kpi .badge,.strip .ft{display:none}
@@ -326,6 +338,8 @@ const CLUBE = {
   quitacao: "2026-07-31",
   // premiação do ranking: anual, paga na etapa de aniversário
   premiacaoRanking: [0.50, 0.30, 0.20],
+  // os R$ 84 que sobraram da quitação
+  divisaoSobra: { caixa: 0.50, ranking: 0.30, jackpot: 0.20 },
   divisao: {
     torneio: { ranking: 0.40, caixa: 0.30, organizacao: 0.30 },
     cash:    { jackpot: 0.50, caixa: 0.25, organizacao: 0.25 }
@@ -437,7 +451,11 @@ function calcularCaixa() {
   const caixa = { entradas: 0, saidas: 0, aposQuitacao: 0, torneio: 0, cash: 0, sobraQuitacao: 0, potes: { caixa: 0, ranking: 0, jackpot: 0, organizacao: 0 } };
   let saldo = 0, quitado = false;
   MOV.forEach(m => {
-    if (!quitado && m.data > CLUBE.quitacao) { quitado = true; caixa.sobraQuitacao = caixa.potes.caixa; }
+    if (!quitado && m.data > CLUBE.quitacao) {
+      // o que sobrou depois de quitar a dívida também é dividido entre os potes
+      quitado = true; caixa.sobraQuitacao = caixa.potes.caixa; caixa.potes.caixa = 0; caixa.sobraParts = {};
+      Object.entries(CLUBE.divisaoSobra).forEach(([p, f]) => { caixa.sobraParts[p] = r2(caixa.sobraQuitacao * f); caixa.potes[p] = r2(caixa.potes[p] + caixa.sobraParts[p]); });
+    }
     m.fase = quitado ? "divisao" : "quitacao";
     m.parts = {};
     if (m.t === "e") {
@@ -499,7 +517,7 @@ function headHtml(titulo, extra = "") {
     <div>
       <div class="eyebrow">Temporada desde ${dt(CLUBE.inicioTemporada)} · ${D.etapas.length} etapas</div>
       <h1>${titulo}</h1>
-      <p class="sub">${D.ranking.length} jogadores pontuaram. Última etapa em ${dt(ult.data)}.</p>
+      <p class="sub">${CLUBE.jogadores.length} membros</p>
     </div>${extra}
   </div>`;
 }
@@ -585,7 +603,7 @@ function tabelaEtapa(e) {
     <thead><tr><th class="c">Pos.</th><th>Jogador</th><th class="r">Pontos</th>${conf ? `<th class="r">Pela regra</th>` : ""}<th class="r">Total no ranking</th><th></th></tr></thead>
     <tbody>${e.res.map(r => `<tr>
       <td class="c">${medal(r.pos)}</td>
-      <td class="name-cell">${esc(r.nome)}${r.acordo ? ` <span class="tag">acordo</span>` : ""}</td>
+      <td class="name-cell">${esc(r.nome)}${r.acordo ? ` <span class="tag">Acordo</span>` : ""}</td>
       <td class="r num">${r.pts}</td>${conf ? `<td class="r num">${r.regra !== r.pts ? `<span class="down">${r.regra}</span>` : r.regra}</td>` : ""}
       <td class="r num">${D.st[r.nome].pts}</td>
       <td class="r"><button class="btn-sm" data-ficha="${esc(r.nome)}">Ver ficha</button></td>
@@ -599,8 +617,18 @@ const COLS = [
   { k: "podios", t: "Top 3", cls: "c" }, { k: "melhor", t: "Melhor", cls: "c" }
 ];
 
+const premioRank = rank => CLUBE.premiacaoRanking[rank - 1] ? r2(caixa.potes.ranking * CLUBE.premiacaoRanking[rank - 1]) : 0;
+
 function renderRanking() {
   app.innerHTML = headHtml("Ranking") + `
+  <section class="podio3" style="margin-top:16px" aria-label="Premiação do top 3">
+    ${D.ranking.filter(s => s.rank <= 3).map(s => `<button class="card podio-card p${s.rank}" data-ficha="${esc(s.nome)}">
+      <span class="podio-pos">${s.rank}º lugar</span>
+      <span class="podio-nome">${esc(s.nome)}</span>
+      <span class="podio-pts num">${s.pts} pts</span>
+      <span class="podio-premio"><small>Prêmio hoje</small><b class="num">${brl(premioRank(s.rank))}</b></span>
+    </button>`).join("")}
+  </section>
   <section class="card" style="margin-top:16px">
     <div class="toolbar">
       <div class="field"><label for="busca">Pesquisar</label><input id="busca" type="search" placeholder="Buscar jogador…" value="${esc(busca)}"></div>
@@ -630,7 +658,7 @@ function drawRankTable() {
     }
     return g + `<tr>
       <td class="c">${medal(s.rank)}</td><td class="c">${deltaHtml(s)}</td>
-      <td class="name-cell">${esc(s.nome)}</td>
+      <td class="name-cell">${esc(s.nome)}${premioRank(s.rank) ? ` <span class="tag y num">${brl(premioRank(s.rank))}</span>` : ""}</td>
       <td class="r num"><b>${s.pts}</b></td><td class="c num">${s.etapas}</td><td class="c num">${(s.pts / s.etapas).toFixed(1)}</td>
       <td class="c num">${s.vitorias}</td><td class="c num">${s.acordos}</td><td class="c num">${s.podios}</td><td class="c num">${s.melhor}º</td>
       <td class="r"><button class="btn-sm" data-ficha="${esc(s.nome)}">Ver ficha</button></td>
@@ -664,9 +692,8 @@ function renderEtapas() {
       <div class="podium">${e.res.filter(r => r.acordo || r.pos <= 3).map(r => `<div>${medal(r.pos)}<span class="nm">${esc(r.nome)}</span><span class="num">${r.pts} pts</span></div>`).join("")}</div>
       <div class="etapa-f">
         <span class="tag num">${e.res.length} jogadores</span>
-        ${e.acordo > 1 ? `<span class="tag">acordo entre ${e.acordo}${e.convidados ? ` · ${e.convidados} fora do ranking` : ""}</span>` : `<span class="tag">venceu sozinho</span>`}
-        ${e.arrec ? `<span class="tag y num">${brl(e.arrec)} arrecadados</span>` : ""}
-        ${e.confere.length ? `<span class="tag down" style="border-color:currentColor">conferir pontos</span>` : ""}
+        ${e.acordo > 1 ? `<span class="tag">Acordo em ${e.acordo}</span>` : `<span class="tag">Venceu sozinho</span>`}
+        ${e.arrec ? `<span class="tag y num">Arrecadado ${brl(e.arrec)}</span>` : ""}
       </div>
       <button class="btn-sm" data-etapa="${e.num}" style="align-self:flex-start">Ver resultado completo</button>
     </article>`).join("")}
@@ -684,7 +711,7 @@ function tabelaDivisao(potes) {
         <td class="num">${dt(m.data)}</td><td>${esc(m.descricao)}</td>
         ${potes.map(p => `<td class="r num">${m.parts[p] ? (m.parts[p] < 0 ? `<span class="down">${brl(m.parts[p])}</span>` : brl(m.parts[p])) : `<span class="same">–</span>`}</td>`).join("")}
       </tr>`).join("")}
-        <tr><td class="num">${dt(CLUBE.quitacao)}</td><td>Sobra após quitar a dívida</td>${potes.map(p => `<td class="r num">${p === "caixa" ? brl(caixa.sobraQuitacao) : `<span class="same">–</span>`}</td>`).join("")}</tr>
+        <tr><td class="num">${dt(CLUBE.quitacao)}</td><td>Sobra após quitar a dívida</td>${potes.map(p => `<td class="r num">${caixa.sobraParts && caixa.sobraParts[p] ? brl(caixa.sobraParts[p]) : `<span class="same">–</span>`}</td>`).join("")}</tr>
         <tr class="total"><td colspan="2">Saldo</td>${potes.map(p => `<td class="r num">${brl(P[p])}</td>`).join("")}</tr>
       </tbody></table>`;
 }
@@ -715,7 +742,7 @@ function renderCaixa() {
     <div class="tbl-wrap"><table class="wide">
       <thead><tr><th>Data</th><th>Descrição</th><th class="r">Entrada</th><th class="r">Saída</th></tr></thead>
       <tbody>${[...mov].filter(m => m.pote !== "organizacao").reverse().map(m => `<tr>
-        <td class="num">${dt(m.data)}</td><td>${esc(m.descricao)}${m.data === CLUBE.quitacao && m.t === "e" ? ` <span class="tag y">dívida quitada</span>` : ""}</td>
+        <td class="num">${dt(m.data)}</td><td>${esc(m.descricao)}${m.data === CLUBE.quitacao && m.t === "e" ? ` <span class="tag y">Dívida quitada</span>` : ""}</td>
         <td class="r num">${m.t === "e" ? `<span class="up">+${brl(m.valor)}</span>` : ""}</td>
         <td class="r num">${m.t !== "e" ? `<span class="down">−${brl(m.valor)}</span>` : ""}</td>
         </tr>`).join("")}
@@ -773,7 +800,6 @@ function regrasHtml() {
       <ul style="margin-top:12px">
         <li><b>Acordo:</b> se os jogadores dividem o prêmio, todos pontuam pela quantidade de gente no acordo. Acordo de 2 = ${ptsPos(1)} cada, de 3 = ${ptsPos(2)}, de 4 = ${ptsPos(3)}, de 5 = ${ptsPos(4)}.</li>
         <li>Só quem ganha sozinho leva ${ptsPos(0)}.</li>
-        <li>Se alguém de fora do ranking (primeira vez, por exemplo) entra no acordo, os outros pontuam pelo tamanho total do acordo.</li>
         <li><b>Posições:</b> nas etapas antigas, quem fez acordo aparece em 1º. A partir de agora, quem fez acordo aparece na posição do acordo (acordo de 4 → todos em 4º), e do 6º ao 10º cada um fica na sua posição.</li>
         <li>Desempate no ranking: mais vitórias sozinho, depois mais acordos, depois mais top 3.</li>
       </ul>
@@ -788,7 +814,7 @@ function regrasHtml() {
       <table><thead><tr><th></th><th class="r">Torneio</th><th class="r">Cash</th></tr></thead><tbody>
         ${POTES.map(p => `<tr><td><span class="pill" style="--c:${COR_POTE[p]}">${NOME_POTE[p]}</span></td><td class="r num">${CLUBE.divisao.torneio[p] ? pct(CLUBE.divisao.torneio[p]) : "–"}</td><td class="r num">${CLUBE.divisao.cash[p] ? pct(CLUBE.divisao.cash[p]) : "–"}</td></tr>`).join("")}
       </tbody></table>
-      <p>Até ${dt(CLUBE.quitacao)} todo o dinheiro foi para quitar o material (${brl(caixa.saidas)}). O que sobrou ficou no caixa, e a divisão vale para as entradas seguintes. Compras novas de material saem do caixa.</p>
+      <p>Até ${dt(CLUBE.quitacao)} todo o dinheiro foi para quitar o material (${brl(caixa.saidas)}). O que sobrou (${brl(caixa.sobraQuitacao)}) foi dividido em 50% para o caixa, 30% para a Premiação Rank do Torneio e 20% para o Jackpot do Cash, e a divisão vale para as entradas seguintes. Compras novas de material saem do caixa.</p>
     </div></div>
   </section>`;
 }
@@ -894,7 +920,6 @@ function renderAdmin() {
       <div class="adm-row">
         <div class="field"><label for="r-data">Data</label><input id="r-data" type="date" data-r="data" value="${esc(rascunho.data)}"></div>
         <div class="field"><label for="r-nome">Nome da etapa (opcional)</label><input id="r-nome" data-r="nome" placeholder="Ex.: Torneio de Natal" value="${esc(rascunho.nome)}"></div>
-        <div class="field small"><label for="r-fora">De fora do ranking no acordo</label><input id="r-fora" type="number" min="0" data-r="fora" value="${esc(rascunho.fora)}"></div>
       </div>
       <div class="adm-row">
         <div class="field small"><label for="r-torneio">Arrecadado no torneio (R$)</label><input id="r-torneio" type="number" min="0" step="0.01" data-r="torneio" value="${esc(rascunho.torneio)}"></div>
@@ -947,7 +972,7 @@ function renderAdmin() {
     <div class="panel-head"><h2>Etapas lançadas</h2><span class="meta num">${CLUBE.etapas.length}</span></div>
     <div class="tbl-wrap"><table class="wide"><thead><tr><th>Data</th><th>Etapa</th><th class="c">Jogadores</th><th>Topo</th><th class="r">Arrecadado</th><th></th></tr></thead><tbody>
       ${[...D.etapas].reverse().map(e => `<tr><td class="num">${dt(e.data)}</td><td>Etapa ${e.num}${e.nome ? " · " + esc(e.nome) : ""}</td><td class="c num">${e.res.length}</td>
-        <td>${e.res.filter(r => r.acordo || r.pos === 1).map(r => esc(r.nome)).join(", ")}${e.acordo > 1 ? ` <span class="tag">acordo ${e.acordo}</span>` : ""}</td>
+        <td>${e.res.filter(r => r.acordo || r.pos === 1).map(r => esc(r.nome)).join(", ")}${e.acordo > 1 ? ` <span class="tag">Acordo em ${e.acordo}</span>` : ""}</td>
         <td class="r num">${e.arrec ? brl(e.arrec) : "–"}</td><td class="r">${delBtn("e" + (e.num - 1))}</td></tr>`).join("")}
     </tbody></table></div>
   </section>
@@ -984,7 +1009,7 @@ function renderAdmin() {
 
 function resumoRascunho(R) {
   if (!R.nomes.length) return `<p class="note">Nenhum jogador marcado ainda.</p>`;
-  return `<p class="adm-sum"><b>${R.nomes.length} jogadores</b>${R.acordo ? ` · ${R.N > 1 ? `acordo entre ${R.N}, ${ptsPos(R.N - 1)} pts cada` : `vencedor leva ${ptsPos(0)} pts`}` : ""}</p>
+  return `<p class="adm-sum"><b>${R.nomes.length} jogadores</b>${R.acordo ? ` · ${R.N > 1 ? `acordo em ${R.N}, ${ptsPos(R.N - 1)} pts cada` : `vencedor leva ${ptsPos(0)} pts`}` : ""}</p>
     ${R.erros.length ? `<ul class="adm-err">${R.erros.map(e => `<li>${esc(e)}</li>`).join("")}</ul>` : `<p class="adm-ok">Pronto para salvar.</p>`}`;
 }
 
