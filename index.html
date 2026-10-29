@@ -253,6 +253,9 @@ pre{font-family:var(--font-num);font-size:12px;background:var(--surface-2);borde
 .venc-nome{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .venc-mao,.venc-data{font-size:12px;opacity:.75}
 .venc-valor{font-size:20px;font-weight:700}
+.passos{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+.passos b{color:var(--fg)}
+.ghost:disabled{opacity:.5;cursor:not-allowed}
 .card.editando{border-color:var(--yellow);box-shadow:inset 4px 0 0 var(--yellow)}
 .login{max-width:380px;margin:48px auto 0;padding:24px;display:flex;flex-direction:column;gap:14px}
 /* cards limpos: sem legendas */
@@ -407,19 +410,78 @@ const CLUBE = {
 };
 
 /* ===================== dados editáveis (aba Admin) ===================== */
+// Os dados publicados ficam em dados.json no repositório; o bloco CLUBE acima é só a reserva
+// caso o arquivo não carregue. O admin edita um rascunho neste navegador e publica com o botão Publicar.
 const EDITAVEIS = ["jogadores", "etapas", "entradas", "saidas", "retiradas"];
-const CHAVE = "limpers-dados";
+const CHAVE = "limpers-dados", CHAVE_TOKEN = "limpers-token";
+const REPO = "limpersclub/limpersclub.github.io", ARQUIVO = "dados.json";
 const dadosAtuais = () => Object.fromEntries(EDITAVEIS.map(k => [k, CLUBE[k]]));
-const ORIGINAL = JSON.stringify(dadosAtuais());
+const hashTexto = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 ^ s.charCodeAt(i)) >>> 0; return h.toString(36); };
+let ORIGINAL = JSON.stringify(dadosAtuais()), BASE = hashTexto(ORIGINAL), rascunhoAntigo = null;
 function aplicarDados(obj) { EDITAVEIS.forEach(k => { if (Array.isArray(obj[k])) CLUBE[k] = obj[k]; }); }
-try { const s = JSON.parse(localStorage.getItem(CHAVE)); if (s) aplicarDados(s); } catch (e) {}
+// o rascunho só é usado se foi feito em cima da versão publicada que está no ar
+function carregarRascunho() {
+  rascunhoAntigo = null;
+  try {
+    const s = JSON.parse(localStorage.getItem(CHAVE));
+    if (s && s.dados && s.base === BASE) aplicarDados(s.dados);
+    else if (s) rascunhoAntigo = s.dados || s;
+  } catch (e) {}
+}
+carregarRascunho();
 const temAlteracoes = () => JSON.stringify(dadosAtuais()) !== ORIGINAL;
 function salvarDados() {
   CLUBE.etapas.sort((a, b) => a.data.localeCompare(b.data));
   CLUBE.entradas.sort((a, b) => a[0].localeCompare(b[0]));
   CLUBE.saidas.sort((a, b) => a[0].localeCompare(b[0]));
   CLUBE.retiradas.sort((a, b) => a[0].localeCompare(b[0]));
-  try { localStorage.setItem(CHAVE, JSON.stringify(dadosAtuais())); } catch (e) {}
+  try { localStorage.setItem(CHAVE, JSON.stringify({ base: BASE, dados: dadosAtuais() })); } catch (e) {}
+  recalcular();
+}
+// troca a base pela versão publicada (dados.json) e reaplica o rascunho, se ainda valer
+function usarPublicado(pub) {
+  aplicarDados(pub);
+  if (pub.atualizadoEm) CLUBE.atualizadoEm = pub.atualizadoEm;
+  ORIGINAL = JSON.stringify(dadosAtuais()); BASE = hashTexto(ORIGINAL);
+  carregarRascunho();
+}
+async function carregarPublicado() {
+  try {
+    const r = await fetch(`${ARQUIVO}?v=${Date.now()}`, { cache: "no-store" });
+    if (!r.ok) return false;
+    usarPublicado(await r.json());
+    return true;
+  } catch (e) { return false; }
+}
+const tokenSalvo = () => { try { return localStorage.getItem(CHAVE_TOKEN) || ""; } catch (e) { return ""; } };
+const base64 = s => { const b = new TextEncoder().encode(s); let bin = ""; b.forEach(x => bin += String.fromCharCode(x)); return btoa(bin); };
+const deBase64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, "")), c => c.charCodeAt(0)));
+
+async function gh(caminho, token, opcoes = {}) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}${caminho}`, { ...opcoes, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opcoes.body ? { "Content-Type": "application/json" } : {}) } });
+  const corpo = r.status === 204 ? null : await r.json().catch(() => null);
+  return { ok: r.ok, status: r.status, corpo };
+}
+
+async function publicarDados() {
+  const token = tokenSalvo();
+  if (!token) throw new Error("Salve a chave do GitHub antes de publicar.");
+  const atual = await gh(`/contents/${ARQUIVO}`, token);
+  if (atual.status === 401) throw new Error("A chave do GitHub não vale mais. Crie uma nova e salve de novo.");
+  if (!atual.ok && atual.status !== 404) throw new Error(`O GitHub recusou (erro ${atual.status}). Confira se a chave tem permissão de escrita em “Contents”.`);
+  if (atual.ok) {
+    // alguém publicou depois que este rascunho começou?
+    const noAr = JSON.parse(deBase64(atual.corpo.content));
+    if (hashTexto(JSON.stringify(Object.fromEntries(EDITAVEIS.map(k => [k, noAr[k]])))) !== BASE)
+      throw new Error("Os dados foram publicados de outro lugar depois que você começou. Recarregue a página e lance de novo por cima da versão nova.");
+  }
+  const dados = { ...dadosAtuais(), atualizadoEm: hoje() };
+  const envio = await gh(`/contents/${ARQUIVO}`, token, { method: "PUT", body: JSON.stringify({
+    message: `Atualização pelo admin em ${dt(hoje())}`, content: base64(JSON.stringify(dados, null, 1) + "\n"), branch: "main", ...(atual.ok ? { sha: atual.corpo.sha } : {})
+  }) });
+  if (!envio.ok) throw new Error(envio.status === 403 || envio.status === 404 ? "A chave não tem permissão para gravar no repositório do site." : `Não deu para publicar (erro ${envio.status}).`);
+  try { localStorage.removeItem(CHAVE); } catch (e) {}
+  usarPublicado(dados);
   recalcular();
 }
 
@@ -561,7 +623,8 @@ recalcular();
 const MAXPTS = Math.max(...CLUBE.pontosPorPosicao);
 const app = document.getElementById("app");
 let sortKey = "rank", sortDir = 1, busca = "";
-document.getElementById("upd").textContent = `Atualizado em ${dt(CLUBE.atualizadoEm)}`;
+const atualizarRodape = () => document.getElementById("upd").textContent = `Atualizado em ${dt(CLUBE.atualizadoEm)}`;
+atualizarRodape();
 
 function deltaHtml(s) {
   const p = prevRank[s.nome];
@@ -1080,7 +1143,7 @@ function abrirFicha(nome) {
 const hoje = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 // editIdx: índice da etapa sendo editada (null = etapa nova); modo "pts" = etapa antiga da planilha, editada direto nos pontos
 const novoRascunho = () => ({ data: hoje(), nome: "", jogou: {}, pos: {}, fora: 0, torneio: "", cash: "", editIdx: null, modo: "pos" });
-let rascunho = novoRascunho(), apagar = null, avisoAdm = "";
+let rascunho = novoRascunho(), apagar = null, avisoAdm = "", avisoErro = false, publicando = false;
 
 const torneioDoDia = data => CLUBE.entradas.filter(x => x[0] === data && tipoEntrada(x[1]) !== "cash");
 
@@ -1153,12 +1216,18 @@ function renderAdmin() {
   <section class="potes4" style="margin-top:16px">
     ${POTES.map(p => `<div class="card kpi ${p === "organizacao" ? "money" : ""}"><div class="kpi-top">${NOME_POTE[p]}<span class="dot" style="background:${COR_POTE[p]}"></span></div><div class="kpi-val num">${brl(caixa.potes[p])}</div></div>`).join("")}
   </section>
+  ${rascunhoAntigo ? `<section class="card adm-banner on" style="margin-top:16px">
+    <div><b>Você tem alterações antigas que não foram publicadas.</b>
+      <p class="note">Elas foram feitas antes da última publicação. Usar essas alterações substitui o que foi publicado depois.</p></div>
+    <div class="adm-actions"><button class="btn-sm" data-acao="usarAntigo">Usar mesmo assim</button><button class="btn-sm danger" data-acao="descartarAntigo">Descartar</button></div>
+  </section>` : ""}
   <section class="card adm-banner ${temAlteracoes() ? "on" : ""}" style="margin-top:16px">
-    <div><b>${temAlteracoes() ? "Há alterações salvas só neste navegador." : "Nenhuma alteração pendente."}</b>
-      <p class="note">${temAlteracoes() ? "Os participantes só veem quando os dados forem publicados no site. Use “Exportar dados” para levar as alterações." : "O que você mudar aqui fica salvo neste navegador até ser publicado."}</p></div>
-    <div class="adm-actions"><button class="btn-sm" data-acao="irExportar">Exportar dados</button>${temAlteracoes() ? delBtn("tudo", "Descartar alterações") : ""}</div>
+    <div><b>${publicando ? "Publicando…" : temAlteracoes() ? "Há alterações ainda não publicadas." : "Tudo publicado."}</b>
+      <p class="note">${temAlteracoes() ? "Os participantes só veem depois de publicar. As alterações ficam guardadas neste navegador até lá." : "O que você lançar aqui fica guardado neste navegador até você publicar."}</p></div>
+    <div class="adm-actions">${temAlteracoes() ? `<button class="ghost primary" data-acao="publicar" ${publicando || !tokenSalvo() ? "disabled" : ""}>Publicar no site</button>${delBtn("tudo", "Descartar alterações")}` : ""}</div>
   </section>
-  ${avisoAdm ? `<p class="adm-ok" role="status">${esc(avisoAdm)}</p>` : ""}
+  ${temAlteracoes() && !tokenSalvo() ? `<p class="note" style="margin-top:8px">Para publicar, salve a chave do GitHub no card “Publicação”, no fim da página.</p>` : ""}
+  ${avisoAdm ? `<p class="${avisoErro || /^(Preencha|O valor passa|Não consegui)/.test(avisoAdm) ? "adm-err" : "adm-ok"}" role="status" style="list-style:none;padding:0">${esc(avisoAdm)}</p>` : ""}
 
   <section class="card ${rascunho.editIdx !== null ? "editando" : ""}" style="margin-top:16px" id="lancar">
     <div class="panel-head"><h2>${rascunho.editIdx !== null ? `Editar etapa ${rascunho.editIdx + 1} · ${dt(rascunho.dataOrig)}` : "Lançar etapa"}</h2><span class="meta">${rascunho.modo === "pts" ? "etapa antiga: edite os pontos de cada um" : "marque quem jogou e a posição final"}</span></div>
@@ -1258,6 +1327,23 @@ function renderAdmin() {
     </tbody></table></div>
   </section>
 
+  <section class="card" style="margin-top:16px" id="publicacao">
+    <div class="panel-head"><h2>Publicação</h2><span class="meta">${tokenSalvo() ? "chave salva neste navegador" : "falta salvar a chave"}</span></div>
+    <div class="panel-body adm-form">
+      ${tokenSalvo() ? `<div class="adm-actions"><span class="adm-ok" style="margin:0">Este navegador já pode publicar.</span><button class="btn-sm" data-acao="testarToken">Testar chave</button>${delBtn("token", "Remover chave")}</div>`
+      : `<ol class="passos">
+          <li>Entre em github.com logado e abra <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens</b>.</li>
+          <li>Clique em <b>Generate new token</b>. Dê um nome (ex.: “Admin limper's club”) e escolha a validade.</li>
+          <li>Em <b>Resource owner</b>, escolha <b>limpersclub</b>. Em <b>Repository access</b>, marque <b>Only select repositories</b> e escolha <b>limpersclub.github.io</b>.</li>
+          <li>Em <b>Permissions → Repository permissions</b>, coloque <b>Contents</b> em <b>Read and write</b>.</li>
+          <li>Clique em <b>Generate token</b>, copie a chave e cole aqui embaixo.</li>
+        </ol>
+        <div class="adm-row"><div class="field"><label for="tokenInp">Chave do GitHub</label><input id="tokenInp" type="password" autocomplete="off" placeholder="github_pat_..."></div>
+          <button class="ghost primary" data-acao="salvarToken" style="align-self:end">Salvar chave</button></div>
+        <p class="note">A chave fica guardada só neste navegador, nunca no site. Para publicar de outro aparelho, salve a chave nele também.</p>`}
+    </div>
+  </section>
+
   <section class="card" style="margin-top:16px" id="exportar">
     <div class="panel-head"><h2>Exportar e importar</h2></div>
     <div class="panel-body adm-form">
@@ -1277,7 +1363,7 @@ function renderAdmin() {
 
   <h2 style="margin-top:28px;font-size:20px">Regras</h2>
   ${regrasHtml()}`;
-  avisoAdm = "";
+  avisoAdm = ""; avisoErro = false;
 }
 
 function resumoRascunho(R) {
@@ -1294,8 +1380,35 @@ function movAdmin() {
   return L.sort((a, b) => b.data.localeCompare(a.data));
 }
 
+async function acaoPublicacao(acao) {
+  const val = id => document.getElementById(id).value.trim();
+  if (acao === "salvarToken") {
+    const t = val("tokenInp");
+    if (!t) { avisoAdm = "Cole a chave antes de salvar."; avisoErro = true; return renderAdmin(); }
+    const r = await gh("", t).catch(() => ({ ok: false, status: 0 }));
+    if (!r.ok) { avisoAdm = r.status === 401 ? "Essa chave não é válida. Confira se copiou inteira." : r.status === 404 ? "Essa chave não enxerga o repositório limpersclub.github.io. Confira o Resource owner e o repositório escolhidos." : "Não consegui falar com o GitHub. Tente de novo."; avisoErro = true; return renderAdmin(); }
+    if (r.corpo && r.corpo.permissions && !r.corpo.permissions.push) { avisoAdm = "A chave só lê o repositório. Ela precisa de Contents: Read and write."; avisoErro = true; return renderAdmin(); }
+    try { localStorage.setItem(CHAVE_TOKEN, t); } catch (e) {}
+    avisoAdm = "Chave salva. Este navegador já pode publicar.";
+  } else if (acao === "testarToken") {
+    const r = await gh("", tokenSalvo()).catch(() => ({ ok: false }));
+    avisoAdm = r.ok ? "A chave está funcionando." : "A chave não funciona mais. Remova e salve uma nova."; avisoErro = !r.ok;
+  } else if (acao === "publicar") {
+    publicando = true; renderAdmin();
+    try { await publicarDados(); avisoAdm = "Publicado! O site atualiza para todo mundo em 1 a 2 minutos."; }
+    catch (e) { avisoAdm = e.message; avisoErro = true; }
+    publicando = false;
+  } else if (acao === "usarAntigo") {
+    aplicarDados(rascunhoAntigo); rascunhoAntigo = null; salvarDados(); avisoAdm = "Alterações antigas carregadas. Confira antes de publicar.";
+  } else if (acao === "descartarAntigo") {
+    rascunhoAntigo = null; try { localStorage.removeItem(CHAVE); } catch (e) {} avisoAdm = "Alterações antigas descartadas.";
+  }
+  renderAdmin();
+}
+
 function acaoAdmin(acao) {
   const val = id => document.getElementById(id).value.trim();
+  if (["salvarToken", "testarToken", "publicar", "usarAntigo", "descartarAntigo"].includes(acao)) return acaoPublicacao(acao);
   if (acao === "entrar") {
     if (val("adm-senha") === CLUBE.senhaAdmin) { adminOk = true; try { sessionStorage.setItem("limpers-adm", "1"); } catch (e) {} return renderAdmin(); }
     avisoAdm = "Senha incorreta."; return renderLogin();
@@ -1371,7 +1484,8 @@ function apagarAdmin(k) {
   if (apagar !== k) { apagar = k; return renderAdmin(); }
   apagar = null;
   const i = +k.slice(1);
-  if (k === "tudo") { try { localStorage.removeItem(CHAVE); } catch (e) {} aplicarDados(JSON.parse(ORIGINAL)); recalcular(); avisoAdm = "Alterações descartadas."; return renderAdmin(); }
+  if (k === "tudo") { try { localStorage.removeItem(CHAVE); } catch (e) {} aplicarDados(JSON.parse(ORIGINAL)); rascunhoAntigo = null; recalcular(); avisoAdm = "Alterações descartadas."; return renderAdmin(); }
+  if (k === "token") { try { localStorage.removeItem(CHAVE_TOKEN); } catch (e) {} avisoAdm = "Chave removida deste navegador."; return renderAdmin(); }
   if (k[0] === "e") { CLUBE.etapas.splice(i, 1); rascunho = novoRascunho(); }
   if (k[0] === "j") CLUBE.jogadores.splice(i, 1);
   if (k[0] === "n") CLUBE.entradas.splice(i, 1);
@@ -1440,4 +1554,6 @@ document.getElementById("themeBtn").addEventListener("click", () => {
 
 window.addEventListener("hashchange", () => go(location.hash.slice(1), false));
 go(location.hash.slice(1) || "painel", false);
+// mostra na hora com a reserva e troca pelos dados publicados assim que dados.json chegar
+carregarPublicado().then(ok => { if (!ok) return; recalcular(); atualizarRodape(); go(location.hash.slice(1) || "painel", false); });
 </script>
