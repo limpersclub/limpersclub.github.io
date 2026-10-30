@@ -326,10 +326,11 @@ pre{font-family:var(--font-num);font-size:12px;background:var(--surface-2);borde
 .ck-relogio.ck-alerta{color:#ff4b4f;text-shadow:0 0 18px rgba(255,75,79,.5);animation:pisca 1s steps(2) infinite}
 @keyframes pisca{50%{opacity:.55}}
 @media (prefers-reduced-motion:reduce){ .ck-relogio.ck-alerta{animation:none} }
-.ck-lado{display:flex;align-items:center;gap:clamp(10px,2.4vw,24px)}
+.ck-lado{display:flex;align-items:center;gap:clamp(10px,2.4vw,24px);min-width:0}
 .ck-pizza{width:clamp(54px,9vw,96px);flex:none}
-.ck-blinds{display:flex;flex-direction:column;gap:6px;min-width:0}
-.ck-blinds div{display:flex;flex-direction:column}
+.ck-blinds{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.ck-blinds div{display:flex;flex-direction:column;min-width:0}
+.ck-blinds b{display:block;max-width:100%;overflow:hidden}
 .ck-blinds span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#ffdc00}
 .ck-blinds b{font-size:clamp(26px,5vw,54px);font-weight:700;color:#fff;white-space:nowrap}
 .clock.ck-pausa .ck-blinds b#ckBlinds{color:#ffdc00}
@@ -1263,6 +1264,15 @@ function renderClock() {
   desenharClock();
 }
 
+// troca o texto e diminui a fonte até caber na largura disponível (blinds altos como 12.000/25.000)
+function caber(el, texto) {
+  if (el.textContent === texto && el.dataset.w == el.clientWidth) return;
+  el.textContent = texto; el.style.fontSize = "";
+  let tam = parseFloat(getComputedStyle(el).fontSize);
+  while (el.scrollWidth > el.clientWidth + 1 && tam > 14) { tam -= 2; el.style.fontSize = tam + "px"; }
+  el.dataset.w = el.clientWidth;
+}
+
 function desenharClock() {
   const box = document.getElementById("ckTempo"); if (!box) return;
   atualizarNivelClock();
@@ -1271,7 +1281,7 @@ function desenharClock() {
   box.classList.toggle("ck-alerta", clock.rodando && rest <= 60000);
   document.getElementById("clockBox").classList.toggle("ck-pausa", !!n.pausa);
   document.getElementById("ckNivel").textContent = n.pausa ? "Pausa" : numeroNivel(i);
-  document.getElementById("ckBlinds").textContent = blindsTxt(n);
+  caber(document.getElementById("ckBlinds"), blindsTxt(n));
   document.getElementById("ckAnte").textContent = n.pausa || !n.ante ? "–" : n.ante.toLocaleString("pt-BR");
   document.getElementById("ckProxTempo").textContent = prox ? fmtTempo(prox.min * 60000) : "--:--";
   document.getElementById("ckProxBlinds").textContent = prox ? blindsTxt(prox) + (prox.ante ? ` · ante ${prox.ante}` : "") : "Fim da estrutura";
