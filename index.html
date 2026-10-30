@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffdc00">
 <title>limper's club</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,6 +44,10 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
 body{background:var(--luz) fixed, var(--naipes), var(--bg);background-color:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:14px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--yellow)}
 .num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
@@ -1255,7 +1265,8 @@ function desenharClock() {
   document.getElementById("ckProxTempo").textContent = prox ? fmtTempo(prox.min * 60000) : "--:--";
   document.getElementById("ckProxBlinds").textContent = prox ? blindsTxt(prox) + (prox.ante ? ` · ante ${prox.ante}` : "") : "Fim da estrutura";
   // tempo total jogado e tempo até a próxima pausa
-  const jogado = sum(E.slice(0, i).map(x => x.min * 60000)) + (dur - rest);
+  const jogado = Math.floor((sum(E.slice(0, i).map(x => x.min * 60000)) + (dur - rest)) / 1000) * 1000; // conta para baixo
+
   document.getElementById("ckTotal").textContent = fmtTempo(jogado, true);
   const pIdx = E.findIndex((x, j) => j > i && x.pausa);
   document.getElementById("ckPausa").textContent = n.pausa ? "agora" : pIdx < 0 ? "–" : fmtTempo(rest + sum(E.slice(i + 1, pIdx).map(x => x.min * 60000)), true);
