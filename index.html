@@ -101,7 +101,7 @@ h2{font-size:15px;font-weight:700;margin:0;letter-spacing:-.01em}
 .rh-total .lbl{color:var(--muted);font-size:12px}
 .rh-total .val{font-size:30px;font-weight:700;letter-spacing:-.02em}
 .rh-top3{display:flex;flex-direction:column}
-.rh-linha{display:grid;grid-template-columns:34px 110px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 18px;background:none;border:0;border-bottom:1px solid var(--line-soft);text-align:left;cursor:pointer;font:inherit;color:inherit}
+.rh-linha{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 18px;background:none;border:0;border-bottom:1px solid var(--line-soft);text-align:left;cursor:pointer;font:inherit;color:inherit}
 .rh-linha:last-child{border-bottom:0}
 .rh-linha:hover .rh-nome{text-decoration:underline}
 .rh-col{font-size:12px;color:var(--muted)}
@@ -183,6 +183,7 @@ tr.total td{border-top:1px solid var(--line);font-weight:700}
 .podium .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .etapa-f{display:flex;flex-wrap:wrap;gap:6px}
 .tag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.tag.cinza{background:#8d8b82;border-color:#8d8b82;color:#111;font-weight:600}
 .tag.y{background:var(--yellow);border-color:var(--yellow);color:var(--yellow-ink);font-weight:600}
 
 svg text{font-family:var(--font-num);font-size:11px;fill:var(--muted)}
@@ -269,6 +270,21 @@ pre{font-family:var(--font-num);font-size:12px;background:var(--surface-2);borde
 .res-val{font-size:20px;color:var(--muted)}
 .regras-jp ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:10px;color:var(--muted);max-width:75ch}
 .regras-jp b{color:var(--fg)}
+.regras-maos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.regra-mao{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:8px}
+.regra-mao p{margin:0;color:var(--muted)}
+.regra-mao p b{color:var(--fg)}
+.rm-topo{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cartas{display:inline-flex;gap:4px;flex-wrap:wrap}
+.carta{display:inline-grid;place-items:center;min-width:34px;height:46px;padding:0 4px;border-radius:6px;background:#fff;color:#111;border:1px solid #c9c7bd;font-family:var(--font-num);font-weight:700;font-size:15px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.carta.verm{color:#d1141b}
+.exemplo{margin-top:16px;border:1px dashed var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ex-titulo{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mark)}
+.ex-linha{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.ex-rot{width:84px;font-size:12px;color:var(--muted)}
+.ex-res{font-size:13px;color:var(--muted)}
+.ex-conclusao{margin:0;color:var(--muted)}
+.ex-conclusao b{color:var(--fg)}
 @media (max-width:800px){ .maos{grid-template-columns:repeat(2,minmax(0,1fr))} .mao-regras{grid-column:1 / -1} .roleta-grid{grid-template-columns:minmax(0,1fr)} }
 /* vencedores do jackpot */
 .vencedores{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
@@ -701,7 +717,7 @@ function renderPainel() {
   <section class="card resumo-home" aria-label="Resumo" style="margin-top:16px">
     <div class="rh-total"><div class="lbl">Total</div><div class="val num">${brl(caixa.saldoPub)}</div></div>
     <div class="rh-top3">
-      ${D.ranking.slice(0, 3).map(s => `<button class="rh-linha" data-ficha="${esc(s.nome)}">${medal(s.rank)}<span class="rh-col">${s.rank}º Colocado</span><b class="rh-nome">${esc(s.nome)}</b><span class="rh-pts num">${s.pts} pts</span></button>`).join("")}
+      ${D.ranking.slice(0, 3).map(s => `<button class="rh-linha" data-ficha="${esc(s.nome)}">${medal(s.rank)}<b class="rh-nome">${esc(s.nome)}</b><span class="rh-pts num">${s.pts} pts</span></button>`).join("")}
     </div>
   </section>
 
@@ -755,7 +771,7 @@ function tabelaEtapa(e) {
     <thead><tr><th class="c">Pos.</th><th>Jogador</th><th class="r">Pontos</th>${conf ? `<th class="r">Pela regra</th>` : ""}<th class="r">Total no ranking</th><th></th></tr></thead>
     <tbody>${e.res.map(r => `<tr>
       <td class="c">${medal(r.pos, r.acordo)}</td>
-      <td class="name-cell">${esc(r.nome)}${r.acordo ? ` <span class="tag">Acordo</span>` : ""}</td>
+      <td class="name-cell">${esc(r.nome)}${r.acordo ? ` <span class="tag cinza">Acordo</span>` : ""}</td>
       <td class="r num">${r.pts}</td>${conf ? `<td class="r num">${r.regra !== r.pts ? `<span class="down">${r.regra}</span>` : r.regra}</td>` : ""}
       <td class="r num">${D.st[r.nome].pts}</td>
       <td class="r"><button class="btn-sm" data-ficha="${esc(r.nome)}">Ver ficha</button></td>
@@ -918,14 +934,70 @@ function svgRoleta(cfg) {
     </svg></div>`;
 }
 
+// desenho de carta: "A♠", "10♥"... copas e ouros em vermelho
+const carta = c => `<span class="carta ${/[♥♦]/.test(c) ? "verm" : ""}">${c}</span>`;
+const cartas = lista => `<span class="cartas">${lista.split(" ").map(carta).join("")}</span>`;
+const faixa = (mod, k) => { const vs = CLUBE.roletas[mod][k].fatias.map(f => f[0]); return `${Math.min(...vs)}% a ${Math.max(...vs)}%`; };
+
 function regrasJackpotHtml() {
+  const m = roleta.mod, omaha = m === "omaha";
+  const maos = omaha ? [
+    ["Royal Flush", "A, K, Q, J e 10 do mesmo naipe.", "A♥ K♥ Q♥ J♥ 10♥"],
+    ["Straight Flush", "Cinco cartas em sequência do mesmo naipe.", "5♣ 6♣ 7♣ 8♣ 9♣"],
+    ["Quadra", "Quatro cartas iguais, de qualquer valor.", "J♠ J♥ J♦ J♣ 4♠"],
+    ["Bad Beat", "Perder a mão com <b>quadra ou melhor</b>.", ""]
+  ] : [
+    ["Royal Flush", "A, K, Q, J e 10 do mesmo naipe.", "A♠ K♠ Q♠ J♠ 10♠"],
+    ["Straight Flush", "Cinco cartas em sequência do mesmo naipe.", "5♦ 6♦ 7♦ 8♦ 9♦"],
+    ["Quadra", "Quatro cartas iguais.", "8♠ 8♥ 8♦ 8♣ K♠"],
+    ["Bad Beat", "Perder a mão com <b>full house de ases ou melhor</b>.", ""]
+  ];
+  const exemplo = omaha ? {
+    mesa: "9♠ 9♦ 6♥ 7♥ 8♥",
+    perdeu: ["9♣ 9♥ A♠ K♦", "Quadra de 9"],
+    ganhou: ["4♥ 5♥ Q♣ J♣", "Straight flush de 4 a 8 de copas"]
+  } : {
+    mesa: "A♠ A♦ K♣ K♥ 7♠",
+    perdeu: ["A♥ 9♣", "Full house de ases (A A A K K)"],
+    ganhou: ["K♠ K♦", "Quadra de reis (K K K K)"]
+  };
   return `<section class="card" style="margin-top:16px">
-    <div class="panel-head"><h2>Regras do jackpot</h2></div>
+    <div class="panel-head"><h2>Regras gerais</h2></div>
+    <div class="panel-body regras-jp"><ul>
+      <li>O jackpot é formado por ${pct(CLUBE.divisao.cash.jackpot)} do que entra no cash.</li>
+      <li>Quem faz uma das mãos premiadas gira a roleta daquela mão.</li>
+      <li>Cada mão premiada gira <b>uma vez</b>.</li>
+      <li>O prêmio é a porcentagem que sair na roleta, calculada sobre o jackpot na hora do giro.</li>
+      <li>O jackpot é pago à parte. O pote da mão continua indo normalmente para quem ganhou.</li>
+    </ul></div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="panel-head"><h2>Regras do ${MODALIDADE[m]}</h2>${omaha ? `<span class="meta">sempre 2 cartas da mão + 3 da mesa</span>` : ""}</div>
+    <div class="panel-body regras-maos">
+      ${maos.map(([nome, txt, ex], i) => { const k = MAOS[i]; return `<div class="regra-mao">
+        <div class="rm-topo"><b>${nome}</b><span class="tag y num">${faixa(m, k)}</span></div>
+        <p>${txt}</p>${ex ? cartas(ex) : ""}
+      </div>`; }).join("")}
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="panel-head"><h2>Como funciona o Bad Beat · ${MODALIDADE[m]}</h2></div>
     <div class="panel-body regras-jp">
       <ul>
-        <li><b>Bad beat:</b> no Hold'em, perder com full house de ases ou melhor para uma mão maior, como uma quadra maior ou um straight flush. No Omaha, perder com quadra ou melhor. Quem perdeu gira a roleta do bad beat. Se quem ganhou fez royal, straight flush ou quadra, também gira a roleta dele, logo depois.</li>
-        <li><b>Prêmio:</b> cada mão premiada gira uma vez. O prêmio é a porcentagem do jackpot na hora do giro, e é pago à parte do pote.</li>
+        <li>Bad beat é quando alguém tem uma mão muito forte e <b>mesmo assim perde</b> para uma mão ainda maior.</li>
+        <li>Vale quando quem perdeu tinha <b>${omaha ? "quadra ou melhor" : "full house de ases ou melhor"}</b>.</li>
+        <li><b>Quem perdeu</b> gira a roleta do Bad Beat.</li>
+        <li><b>Quem ganhou</b>, se fez royal, straight flush ou quadra, também gira a roleta da mão dele, logo depois.</li>
       </ul>
+      <div class="exemplo">
+        <div class="ex-titulo">Exemplo</div>
+        <div class="ex-linha"><span class="ex-rot">Mesa</span>${cartas(exemplo.mesa)}</div>
+        <div class="ex-linha"><span class="ex-rot">Jogador A</span>${cartas(exemplo.perdeu[0])}<span class="ex-res">${exemplo.perdeu[1]} · <b class="down">perdeu</b></span></div>
+        <div class="ex-linha"><span class="ex-rot">Jogador B</span>${cartas(exemplo.ganhou[0])}<span class="ex-res">${exemplo.ganhou[1]} · <b class="up">ganhou</b></span></div>
+        <p class="ex-conclusao">O jogador A perdeu com ${omaha ? "quadra" : "full house de ases"}, então gira a roleta do <b>Bad Beat</b>. O jogador B gira a roleta da <b>${omaha ? "Straight Flush" : "Quadra"}</b>.</p>
+      </div>
     </div>
   </section>`;
 }
