@@ -485,12 +485,28 @@ const CLUBE = {
   // Omaha paga menos que o Hold'em porque as mãos saem de 4 a 10 vezes mais.
   // estrutura padrão do torneio para a aba Clock (o admin edita e publica; vale o que estiver em dados.json)
   estrutura: [
-    { min: 20, sb: 25, bb: 50, ante: 0 }, { min: 20, sb: 50, bb: 100, ante: 0 }, { min: 20, sb: 75, bb: 150, ante: 0 },
-    { min: 20, sb: 100, bb: 200, ante: 0 }, { pausa: true, min: 10 },
-    { min: 20, sb: 150, bb: 300, ante: 0 }, { min: 20, sb: 200, bb: 400, ante: 0 }, { min: 20, sb: 300, bb: 600, ante: 0 },
-    { min: 20, sb: 400, bb: 800, ante: 0 }, { pausa: true, min: 10 },
-    { min: 20, sb: 500, bb: 1000, ante: 0 }, { min: 20, sb: 700, bb: 1400, ante: 0 }, { min: 20, sb: 1000, bb: 2000, ante: 0 },
-    { min: 20, sb: 1500, bb: 3000, ante: 0 }, { min: 20, sb: 2000, bb: 4000, ante: 0 }
+    { min: 15, sb: 100, bb: 200, ante: 0 }, { min: 15, sb: 200, bb: 400, ante: 0 }, { min: 15, sb: 300, bb: 600, ante: 0 }, { min: 15, sb: 400, bb: 800, ante: 0 }, { min: 15, sb: 500, bb: 1000, ante: 0 }, { min: 15, sb: 600, bb: 1200, ante: 0 }, { min: 15, sb: 800, bb: 1600, ante: 0 },
+    { pausa: true, min: 15 },
+    { min: 12, sb: 1000, bb: 2000, ante: 0 },
+    { min: 12, sb: 1500, bb: 3000, ante: 0 },
+    { min: 12, sb: 2000, bb: 4000, ante: 0 },
+    { min: 12, sb: 2500, bb: 5000, ante: 0 },
+    { min: 12, sb: 3000, bb: 6000, ante: 0 },
+    { min: 12, sb: 4000, bb: 8000, ante: 0 },
+    { min: 12, sb: 5000, bb: 10000, ante: 0 },
+    { min: 12, sb: 6000, bb: 12000, ante: 0 },
+    { min: 12, sb: 8000, bb: 16000, ante: 0 },
+    { min: 12, sb: 10000, bb: 20000, ante: 0 },
+    { min: 12, sb: 12000, bb: 25000, ante: 0 },
+    { min: 12, sb: 15000, bb: 30000, ante: 0 },
+    { min: 12, sb: 20000, bb: 40000, ante: 0 },
+    { min: 12, sb: 25000, bb: 50000, ante: 0 },
+    { min: 12, sb: 30000, bb: 60000, ante: 0 },
+    { min: 12, sb: 40000, bb: 80000, ante: 0 },
+    { min: 12, sb: 50000, bb: 100000, ante: 0 },
+    { min: 12, sb: 60000, bb: 120000, ante: 0 },
+    { min: 12, sb: 80000, bb: 160000, ante: 0 },
+    { min: 12, sb: 100000, bb: 200000, ante: 0 }
   ],
 
   roletas: {
@@ -552,6 +568,7 @@ function usarPublicado(pub) {
   aplicarDados(pub);
   if (pub.atualizadoEm) CLUBE.atualizadoEm = pub.atualizadoEm;
   ORIGINAL = JSON.stringify(dadosAtuais()); BASE = hashTexto(ORIGINAL);
+  estRasc = null; // o editor da estrutura recomeça da versão publicada
   carregarRascunho();
 }
 async function carregarPublicado() {
@@ -1806,7 +1823,8 @@ async function acaoPublicacao(acao) {
     catch (e) { avisoAdm = e.message; avisoErro = true; }
     publicando = false;
   } else if (acao === "usarAntigo") {
-    aplicarDados(rascunhoAntigo); rascunhoAntigo = null; salvarDados(); avisoAdm = "Alterações antigas carregadas. Confira antes de publicar.";
+    // alterações antigas não trazem de volta uma estrutura do Clock velha
+    aplicarDados({ ...rascunhoAntigo, estrutura: CLUBE.estrutura }); rascunhoAntigo = null; salvarDados(); avisoAdm = "Alterações antigas carregadas. Confira antes de publicar.";
   } else if (acao === "descartarAntigo") {
     rascunhoAntigo = null; try { localStorage.removeItem(CHAVE); } catch (e) {} avisoAdm = "Alterações antigas descartadas.";
   }
