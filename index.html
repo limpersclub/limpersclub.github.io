@@ -1,7 +1,7 @@
 <title>limper's club</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Doto:wght@800;900&display=swap">
 <style>
 /* Layout: faixa amarela da marca no topo com as abas; abaixo, painéis de borda fina em fundo neutro; amarelo só onde há dinheiro ou destaque */
 :root{
@@ -299,6 +299,44 @@ pre{font-family:var(--font-num);font-size:12px;background:var(--surface-2);borde
 .passos{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
 .passos b{color:var(--fg)}
 .ghost:disabled{opacity:.5;cursor:not-allowed}
+/* clock: cores fixas, sempre escuro como um painel de LED */
+.clock{background:radial-gradient(ellipse 120% 80% at 15% 100%, rgba(255,220,0,.16), transparent 60%), #0b0b09;color:#f1f0e8;border:1px solid #2b2a25;border-radius:18px;padding:18px clamp(14px,3vw,28px);display:flex;flex-direction:column;gap:clamp(10px,2.4vw,22px)}
+.dot{font-family:"Doto",var(--font-num);font-weight:900;color:#ffdc00;text-shadow:0 0 18px rgba(255,220,0,.45);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.ck-topo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));text-align:center;gap:8px}
+.ck-topo span{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9a988d}
+.ck-topo b{font-size:clamp(16px,3.4vw,26px);font-weight:600}
+.ck-meio{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);align-items:center;gap:clamp(10px,3vw,30px)}
+.ck-relogio{font-size:clamp(64px,15vw,190px);line-height:1;text-align:center}
+.ck-relogio.ck-alerta{color:#ff4b4f;text-shadow:0 0 18px rgba(255,75,79,.5);animation:pisca 1s steps(2) infinite}
+@keyframes pisca{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){ .ck-relogio.ck-alerta{animation:none} }
+.ck-lado{display:flex;align-items:center;gap:clamp(10px,2.4vw,24px)}
+.ck-pizza{width:clamp(54px,9vw,96px);flex:none}
+.ck-blinds{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ck-blinds div{display:flex;flex-direction:column}
+.ck-blinds span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#ffdc00}
+.ck-blinds b{font-size:clamp(26px,5vw,54px);font-weight:700;color:#fff;white-space:nowrap}
+.clock.ck-pausa .ck-blinds b#ckBlinds{color:#ffdc00}
+.ck-prox{display:flex;align-items:baseline;justify-content:center;gap:14px;flex-wrap:wrap;color:#b5b3a8;border-top:1px solid #2b2a25;padding-top:12px}
+.ck-prox-rot{font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.ck-prox-tempo{font-size:clamp(24px,4vw,40px)}
+.ck-controles{display:flex;justify-content:center;align-items:center;gap:clamp(8px,2vw,18px)}
+.ck-btn{width:clamp(46px,9vw,58px);height:clamp(46px,9vw,58px);border-radius:50%;border:1px solid #3d3c36;background:#1e1e1a;color:#f1f0e8;font-size:18px;font-weight:700;cursor:pointer;font-family:var(--font-num)}
+.ck-btn:hover{border-color:#ffdc00}
+.ck-play{width:clamp(68px,14vw,86px);height:clamp(68px,14vw,86px);border-radius:50%;border:3px solid #111;background:#ffdc00;color:#111;font-size:30px;cursor:pointer;box-shadow:0 0 0 2px #ffdc00,0 6px 20px rgba(255,220,0,.3)}
+.ck-extras{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.clock .btn-sm{background:#1e1e1a;border-color:#3d3c36;color:#f1f0e8}
+.ck-atual td{background:color-mix(in srgb,var(--yellow) 18%,var(--surface));font-weight:700}
+@media (max-width:620px){ .ck-meio{grid-template-columns:minmax(0,1fr)} .ck-lado{justify-content:center} }
+/* modo tela cheia: só o relógio, ocupando a tela toda */
+body.clock-cheio{overflow:hidden}
+body.clock-cheio .clock{position:fixed;inset:0;z-index:30;border-radius:0;border:0;margin:0!important;justify-content:space-evenly;
+  padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+body.clock-cheio .ck-relogio{font-size:clamp(72px,min(22vw,34vh),300px)}
+body.clock-cheio .ck-blinds b{font-size:clamp(28px,min(7vw,11vh),90px)}
+@media (orientation:landscape){ body.clock-cheio .ck-meio{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)} body.clock-cheio .ck-lado{justify-content:flex-start} }
+.est-tbl input{width:86px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-family:var(--font-num)}
+.est-tbl td{padding:6px 12px}
 .card.editando{border-color:var(--yellow);box-shadow:inset 4px 0 0 var(--yellow)}
 .login{max-width:380px;margin:48px auto 0;padding:24px;display:flex;flex-direction:column;gap:14px}
 /* cards limpos: sem legendas */
@@ -335,6 +373,7 @@ footer{color:var(--faint);font-size:12px;display:flex;justify-content:space-betw
       <button class="tab" role="tab" data-tab="etapas" id="t-etapas">Etapas</button>
       <button class="tab" role="tab" data-tab="cash" id="t-cash">Cash</button>
       <button class="tab" role="tab" data-tab="roleta" id="t-roleta">Roleta</button>
+      <button class="tab" role="tab" data-tab="clock" id="t-clock">Clock</button>
       <button class="tab" role="tab" data-tab="caixa" id="t-caixa">Caixa</button>
     </nav>
     <button class="tab adm-tab" data-tab="admin" id="t-admin" aria-label="Área do admin">
@@ -427,6 +466,16 @@ const CLUBE = {
 
   // Roletas do jackpot: [% do jackpot, chance em %]. Chances em múltiplos de 5 → a roleta tem 20 fatias de 5%.
   // Omaha paga menos que o Hold'em porque as mãos saem de 4 a 10 vezes mais.
+  // estrutura padrão do torneio para a aba Clock (o admin edita e publica; vale o que estiver em dados.json)
+  estrutura: [
+    { min: 20, sb: 25, bb: 50, ante: 0 }, { min: 20, sb: 50, bb: 100, ante: 0 }, { min: 20, sb: 75, bb: 150, ante: 0 },
+    { min: 20, sb: 100, bb: 200, ante: 0 }, { pausa: true, min: 10 },
+    { min: 20, sb: 150, bb: 300, ante: 0 }, { min: 20, sb: 200, bb: 400, ante: 0 }, { min: 20, sb: 300, bb: 600, ante: 0 },
+    { min: 20, sb: 400, bb: 800, ante: 0 }, { pausa: true, min: 10 },
+    { min: 20, sb: 500, bb: 1000, ante: 0 }, { min: 20, sb: 700, bb: 1400, ante: 0 }, { min: 20, sb: 1000, bb: 2000, ante: 0 },
+    { min: 20, sb: 1500, bb: 3000, ante: 0 }, { min: 20, sb: 2000, bb: 4000, ante: 0 }
+  ],
+
   roletas: {
     holdem: {
       royal:   { nome: "Royal Flush",    fatias: [[50, 40], [60, 30], [70, 20], [80, 10]] },
@@ -455,7 +504,7 @@ const CLUBE = {
 /* ===================== dados editáveis (aba Admin) ===================== */
 // Os dados publicados ficam em dados.json no repositório; o bloco CLUBE acima é só a reserva
 // caso o arquivo não carregue. O admin edita um rascunho neste navegador e publica com o botão Publicar.
-const EDITAVEIS = ["jogadores", "etapas", "entradas", "saidas", "retiradas"];
+const EDITAVEIS = ["jogadores", "etapas", "entradas", "saidas", "retiradas", "estrutura"];
 const CHAVE = "limpers-dados", CHAVE_TOKEN = "limpers-token";
 const REPO = "limpersclub/limpersclub.github.io", ARQUIVO = "dados.json";
 const dadosAtuais = () => Object.fromEntries(EDITAVEIS.map(k => [k, CLUBE[k]]));
@@ -1090,6 +1139,181 @@ app.addEventListener("click", e => {
   if (a.dataset.acaoRoleta === "pagar") pagarRoleta();
 });
 
+/* ===================== Clock do torneio ===================== */
+// O relógio roda só neste aparelho. O estado fica guardado aqui para sobreviver a recarregar a página.
+// fimEm = horário (ms) em que o nível atual acaba quando está rodando; restante = ms que faltam quando pausado.
+const CHAVE_CLOCK = "limpers-clock";
+let clock = (() => { try { return JSON.parse(localStorage.getItem(CHAVE_CLOCK)) || null; } catch (e) { return null; } })()
+  || { nivel: 0, rodando: false, fimEm: 0, restante: null, som: true };
+let clockTimer = null, wakeLock = null, audioCtx = null, avisouMinuto = false, confirmaZerar = false;
+
+const estr = () => CLUBE.estrutura && CLUBE.estrutura.length ? CLUBE.estrutura : [{ min: 20, sb: 25, bb: 50, ante: 0 }];
+const durNivel = i => (estr()[i] ? estr()[i].min : 0) * 60000;
+const salvarClock = () => { try { localStorage.setItem(CHAVE_CLOCK, JSON.stringify(clock)); } catch (e) {} };
+const restanteClock = () => clock.rodando ? Math.max(0, clock.fimEm - Date.now()) : (clock.restante ?? durNivel(clock.nivel));
+const fmtTempo = (ms, horas = false) => {
+  const s = Math.ceil(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+  const p = n => String(n).padStart(2, "0");
+  return horas || h ? `${p(h)}:${p(m)}:${p(ss)}` : `${p(m)}:${p(ss)}`;
+};
+const numeroNivel = i => estr().slice(0, i + 1).filter(n => !n.pausa).length; // pausas não contam como nível
+const blindsTxt = n => n ? (n.pausa ? "Pausa" : `${n.sb.toLocaleString("pt-BR")}/${n.bb.toLocaleString("pt-BR")}`) : "–";
+
+// avança os níveis que já terminaram (inclusive se o celular ficou bloqueado)
+function atualizarNivelClock() {
+  if (!clock.rodando) return false;
+  let mudou = false;
+  while (clock.fimEm <= Date.now()) {
+    if (clock.nivel >= estr().length - 1) { clock.rodando = false; clock.restante = 0; break; }
+    clock.nivel++; clock.fimEm += durNivel(clock.nivel); mudou = true;
+  }
+  if (mudou) { avisouMinuto = false; salvarClock(); bip(3); }
+  return mudou;
+}
+
+function bip(vezes = 1) {
+  if (!clock.som) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume(); // celular só libera som depois de um toque
+    for (let i = 0; i < vezes; i++) {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime + i * 0.35;
+      o.type = "square"; o.frequency.value = 880; o.connect(g); g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      o.start(t); o.stop(t + 0.27);
+    }
+  } catch (e) {}
+}
+
+async function manterTelaAcesa(ligar) {
+  try {
+    if (ligar && !wakeLock && "wakeLock" in navigator) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => wakeLock = null); }
+    if (!ligar && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && clock.rodando) manterTelaAcesa(true); });
+
+function renderClock() {
+  app.innerHTML = headHtml("Clock", "", { membros: false }) + `
+  <section class="clock" id="clockBox" style="margin-top:16px">
+    <div class="ck-topo">
+      <div><span>Tempo até a pausa</span><b class="num" id="ckPausa">–</b></div>
+      <div><span>Nível</span><b class="num" id="ckNivel">1</b></div>
+      <div><span>Tempo total</span><b class="num" id="ckTotal">00:00</b></div>
+    </div>
+    <div class="ck-meio">
+      <div class="ck-relogio dot" id="ckTempo">20:00</div>
+      <div class="ck-lado">
+        <svg class="ck-pizza" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#2a2925"/><path id="ckFatia" fill="#ffdc00"/><circle cx="20" cy="20" r="18" fill="none" stroke="#111" stroke-width="1.5"/></svg>
+        <div class="ck-blinds">
+          <div><span>Blinds</span><b class="num" id="ckBlinds">25/50</b></div>
+          <div><span>Ante</span><b class="num" id="ckAnte">–</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="ck-prox">
+      <span class="ck-prox-rot">Próximo</span>
+      <span class="dot ck-prox-tempo" id="ckProxTempo">20:00</span>
+      <span class="num" id="ckProxBlinds">50/100</span>
+    </div>
+    <div class="ck-controles">
+      <button class="ck-btn" data-ck="anterior" aria-label="Nível anterior">⏮</button>
+      <button class="ck-btn" data-ck="menos" aria-label="Tirar 1 minuto">−1</button>
+      <button class="ck-play" data-ck="play" id="ckPlay" aria-label="Iniciar ou pausar">▶</button>
+      <button class="ck-btn" data-ck="mais" aria-label="Somar 1 minuto">+1</button>
+      <button class="ck-btn" data-ck="proximo" aria-label="Próximo nível">⏭</button>
+    </div>
+    <div class="ck-extras">
+      <button class="btn-sm" data-ck="som" id="ckSom">${clock.som ? "Som ligado" : "Som desligado"}</button>
+      <button class="btn-sm" data-ck="cheia" id="ckCheia">Tela cheia</button>
+      <button class="btn-sm ${confirmaZerar ? "danger" : ""}" data-ck="zerar">${confirmaZerar ? "Confirmar: zerar torneio" : "Zerar torneio"}</button>
+    </div>
+  </section>
+
+  <details class="card dobra" style="margin-top:16px">
+    <summary class="panel-head"><h2>Estrutura do Torneio</h2></summary>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Nível</th><th class="r">Blinds</th><th class="r">Ante</th><th class="r">Tempo</th></tr></thead>
+      <tbody>${estr().map((n, i) => `<tr class="${i === clock.nivel ? "ck-atual" : ""}">
+        <td>${n.pausa ? "Pausa" : numeroNivel(i)}</td><td class="r num">${n.pausa ? "–" : blindsTxt(n)}</td>
+        <td class="r num">${n.pausa || !n.ante ? "–" : n.ante.toLocaleString("pt-BR")}</td><td class="r num">${n.min} min</td></tr>`).join("")}</tbody>
+    </table></div>
+  </details>`;
+  desenharClock();
+}
+
+function desenharClock() {
+  const box = document.getElementById("ckTempo"); if (!box) return;
+  atualizarNivelClock();
+  const E = estr(), i = clock.nivel, n = E[i], prox = E[i + 1], rest = restanteClock(), dur = durNivel(i);
+  box.textContent = fmtTempo(rest);
+  box.classList.toggle("ck-alerta", clock.rodando && rest <= 60000);
+  document.getElementById("clockBox").classList.toggle("ck-pausa", !!n.pausa);
+  document.getElementById("ckNivel").textContent = n.pausa ? "Pausa" : numeroNivel(i);
+  document.getElementById("ckBlinds").textContent = blindsTxt(n);
+  document.getElementById("ckAnte").textContent = n.pausa || !n.ante ? "–" : n.ante.toLocaleString("pt-BR");
+  document.getElementById("ckProxTempo").textContent = prox ? fmtTempo(prox.min * 60000) : "--:--";
+  document.getElementById("ckProxBlinds").textContent = prox ? blindsTxt(prox) + (prox.ante ? ` · ante ${prox.ante}` : "") : "Fim da estrutura";
+  // tempo total jogado e tempo até a próxima pausa
+  const jogado = sum(E.slice(0, i).map(x => x.min * 60000)) + (dur - rest);
+  document.getElementById("ckTotal").textContent = fmtTempo(jogado, true);
+  const pIdx = E.findIndex((x, j) => j > i && x.pausa);
+  document.getElementById("ckPausa").textContent = n.pausa ? "agora" : pIdx < 0 ? "–" : fmtTempo(rest + sum(E.slice(i + 1, pIdx).map(x => x.min * 60000)), true);
+  // pizza do tempo que já passou no nível
+  const f = dur ? Math.min(0.9999, Math.max(0, 1 - rest / dur)) : 0, a = f * 2 * Math.PI;
+  const x = 20 + 18 * Math.sin(a), y = 20 - 18 * Math.cos(a);
+  document.getElementById("ckFatia").setAttribute("d", f ? `M20 20 L20 2 A18 18 0 ${f > 0.5 ? 1 : 0} 1 ${x} ${y} Z` : "");
+  document.getElementById("ckPlay").textContent = clock.rodando ? "⏸" : "▶";
+  if (clock.rodando && rest <= 60000 && rest > 0 && !avisouMinuto) { avisouMinuto = true; bip(1); }
+}
+
+function acaoClock(a) {
+  const rest = restanteClock();
+  if (a === "play") {
+    if (clock.rodando) { clock.restante = rest; clock.rodando = false; manterTelaAcesa(false); }
+    else { clock.fimEm = Date.now() + (rest || durNivel(clock.nivel)); clock.restante = null; clock.rodando = true; manterTelaAcesa(true); if (clock.som) bip(0); }
+  } else if (a === "mais" || a === "menos") {
+    const novo = Math.max(1000, rest + (a === "mais" ? 60000 : -60000));
+    if (clock.rodando) clock.fimEm = Date.now() + novo; else clock.restante = novo;
+  } else if (a === "proximo" || a === "anterior") {
+    const alvo = clock.nivel + (a === "proximo" ? 1 : -1);
+    if (alvo < 0 || alvo >= estr().length) return;
+    clock.nivel = alvo; avisouMinuto = false;
+    if (clock.rodando) clock.fimEm = Date.now() + durNivel(alvo); else clock.restante = durNivel(alvo);
+  } else if (a === "som") {
+    clock.som = !clock.som; if (clock.som) bip(1);
+  } else if (a === "zerar") {
+    if (!confirmaZerar) { confirmaZerar = true; salvarClock(); return renderClock(); }
+    confirmaZerar = false; clock = { nivel: 0, rodando: false, fimEm: 0, restante: null, som: clock.som }; manterTelaAcesa(false);
+  } else if (a === "cheia") {
+    return alternarTelaCheia();
+  }
+  confirmaZerar = false; salvarClock(); renderClock();
+}
+
+// "tela cheia": usa a tela cheia do navegador quando existe e, de todo jeito, cobre a tela com o relógio
+function alternarTelaCheia() {
+  const ligar = !document.body.classList.contains("clock-cheio");
+  document.body.classList.toggle("clock-cheio", ligar);
+  const el = document.documentElement;
+  try {
+    if (ligar && el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape").catch(() => {})).catch(() => {});
+    if (!ligar && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } catch (e) {}
+  const b = document.getElementById("ckCheia"); if (b) b.textContent = ligar ? "Sair da tela cheia" : "Tela cheia";
+}
+document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("clock-cheio")) alternarTelaCheia(); });
+
+app.addEventListener("click", e => { const b = e.target.closest("[data-ck]"); if (b) acaoClock(b.dataset.ck); });
+document.addEventListener("keydown", e => {
+  if (!document.getElementById("ckTempo") || /input|textarea|select/i.test(e.target.tagName)) return;
+  if (e.code === "Space") { e.preventDefault(); acaoClock("play"); }
+  if (e.key === "ArrowRight") acaoClock("proximo");
+  if (e.key === "ArrowLeft") acaoClock("anterior");
+  if (e.key === "Escape" && document.body.classList.contains("clock-cheio")) alternarTelaCheia();
+});
+setInterval(() => { if (document.getElementById("ckTempo")) desenharClock(); else atualizarNivelClock(); }, 250);
+
 /* ===================== Caixa ===================== */
 // "Entrou" = soma dos potes mostrados; na parte pública já sai sem a organização
 function tabelaDivisao(potes) {
@@ -1391,6 +1615,8 @@ function renderAdmin() {
     </div>
   </section>
 
+  ${estruturaAdminHtml()}
+
   <section class="split" style="margin-top:16px">
     <div class="card">
       <div class="panel-head"><h2>Jogadores</h2><span class="meta num">${CLUBE.jogadores.length} cadastrados</span></div>
@@ -1460,6 +1686,30 @@ function renderAdmin() {
   <h2 style="margin-top:28px;font-size:20px">Regras</h2>
   ${regrasHtml()}`;
   avisoAdm = ""; avisoErro = false;
+}
+
+// estrutura do Clock: edita uma cópia e só grava ao clicar em "Salvar estrutura"
+let estRasc = null;
+function estruturaAdminHtml() {
+  if (!estRasc) estRasc = JSON.parse(JSON.stringify(estr()));
+  const mudou = JSON.stringify(estRasc) !== JSON.stringify(estr());
+  let nivel = 0;
+  return `<section class="card ${mudou ? "editando" : ""}" style="margin-top:16px" id="estruturaAdm">
+    <div class="panel-head"><h2>Estrutura do torneio (Clock)</h2><span class="meta">o padrão que abre na aba Clock de todo mundo</span></div>
+    <div class="tbl-wrap"><table class="est-tbl">
+      <thead><tr><th>Nível</th><th>Minutos</th><th>Small blind</th><th>Big blind</th><th>Ante</th><th></th></tr></thead>
+      <tbody>${estRasc.map((n, i) => `<tr>
+        <td>${n.pausa ? "<b>Pausa</b>" : ++nivel}</td>
+        <td><input type="number" min="1" data-est="${i}" data-campo="min" value="${n.min}" aria-label="Minutos"></td>
+        ${n.pausa ? `<td colspan="3" class="note">intervalo</td>` : ["sb", "bb", "ante"].map(c => `<td><input type="number" min="0" data-est="${i}" data-campo="${c}" value="${n[c] || 0}" aria-label="${c}"></td>`).join("")}
+        <td class="r"><button class="x" data-est-del="${i}" aria-label="Remover linha">×</button></td>
+      </tr>`).join("")}</tbody></table></div>
+    <div class="panel-body adm-actions">
+      <button class="btn-sm" data-acao="addNivel">+ Nível</button>
+      <button class="btn-sm" data-acao="addPausa">+ Pausa</button>
+      ${mudou ? `<button class="ghost primary" data-acao="salvarEst">Salvar estrutura</button><button class="btn-sm" data-acao="descartarEst">Desfazer</button>` : ""}
+    </div>
+  </section>`;
 }
 
 // sem chave salva o card aparece no topo do admin; com chave, desce para o fim
@@ -1563,6 +1813,16 @@ function acaoAdmin(acao) {
     if (!data || !(v > 0)) { avisoAdm = "Preencha a data e um valor de cash maior que zero."; return renderAdmin(); }
     CLUBE.entradas.push([data, "Cash", v]);
     avisoAdm = `Cash de ${dt(data)} salvo: ${brl(v)}.`;
+  } else if (acao === "addNivel" || acao === "addPausa") {
+    const ult = [...estRasc].reverse().find(n => !n.pausa) || { min: 20, sb: 25, bb: 50, ante: 0 };
+    estRasc.push(acao === "addPausa" ? { pausa: true, min: 10 } : { min: ult.min, sb: ult.sb * 2, bb: ult.bb * 2, ante: ult.ante || 0 });
+    return renderAdmin();
+  } else if (acao === "descartarEst") {
+    estRasc = null; return renderAdmin();
+  } else if (acao === "salvarEst") {
+    if (!estRasc.length || estRasc.some(n => !(n.min > 0) || (!n.pausa && !(n.bb > 0)))) { avisoAdm = "Toda linha precisa de minutos, e todo nível precisa de big blind."; avisoErro = true; return renderAdmin(); }
+    CLUBE.estrutura = estRasc; estRasc = null;
+    avisoAdm = "Estrutura salva. Publique para ela valer no Clock de todo mundo.";
   } else if (acao === "addPremio") {
     const data = val("jp-data"), nome = val("jp-premiado"), mao = val("jp-mao"), v = parseFloat(val("jp-valor"));
     if (!data || !nome || !(v > 0)) { avisoAdm = "Preencha a data, o premiado e um valor maior que zero."; return renderAdmin(); }
@@ -1613,6 +1873,16 @@ function apagarAdmin(k) {
 
 app.addEventListener("input", e => {
   const t = e.target;
+  if (t.dataset.est !== undefined) {
+    estRasc[+t.dataset.est][t.dataset.campo] = Math.max(0, parseInt(t.value, 10) || 0);
+    const sec = document.getElementById("estruturaAdm"), mudou = JSON.stringify(estRasc) !== JSON.stringify(estr());
+    // na primeira mudança redesenha para mostrar o botão Salvar, mantendo o foco no campo
+    if (mudou && !sec.querySelector('[data-acao="salvarEst"]')) {
+      const y = window.scrollY; renderAdmin(); window.scrollTo(0, y);
+      const el = app.querySelector(`[data-est="${t.dataset.est}"][data-campo="${t.dataset.campo}"]`); if (el) el.focus();
+    }
+    return;
+  }
   if (t.dataset.r) rascunho[t.dataset.r] = t.value;
   else if (t.dataset.pos !== undefined) rascunho.pos[CLUBE.jogadores[+t.dataset.pos]] = t.value;
   else return;
@@ -1631,9 +1901,10 @@ app.addEventListener("change", e => {
 });
 
 /* ===================== navegação ===================== */
-const RENDER = { painel: renderPainel, ranking: renderRanking, etapas: renderEtapas, cash: renderCash, roleta: renderRoleta, caixa: renderCaixa, admin: () => adminLiberado() ? renderAdmin() : renderLogin() };
+const RENDER = { painel: renderPainel, ranking: renderRanking, etapas: renderEtapas, cash: renderCash, roleta: renderRoleta, clock: renderClock, caixa: renderCaixa, admin: () => adminLiberado() ? renderAdmin() : renderLogin() };
 function go(tab, push = true) {
   if (!RENDER[tab]) tab = "painel";
+  if (tab !== "clock" && document.body.classList.contains("clock-cheio")) alternarTelaCheia();
   apagar = null;
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
   RENDER[tab]();
@@ -1646,6 +1917,7 @@ app.addEventListener("click", e => {
   const ac = e.target.closest("[data-acao]"); if (ac) return acaoAdmin(ac.dataset.acao);
   const dl = e.target.closest("[data-del]"); if (dl) return apagarAdmin(dl.dataset.del);
   const ed = e.target.closest("[data-edit]"); if (ed) return editarEtapa(+ed.dataset.edit);
+  const ex = e.target.closest("[data-est-del]"); if (ex) { estRasc.splice(+ex.dataset.estDel, 1); return renderAdmin(); }
   const f = e.target.closest("[data-ficha]"); if (f) return abrirFicha(f.dataset.ficha);
   const g = e.target.closest("[data-go]"); if (g) return go(g.dataset.go);
   const s = e.target.closest("[data-sort]");
