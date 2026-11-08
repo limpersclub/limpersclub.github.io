@@ -649,11 +649,11 @@ function calcular(n = CLUBE.etapas.length) {
   const etapas = CLUBE.etapas.slice(0, n).map((e, idx) => {
     const L = lerEtapa(e);
     const res = Object.entries(L.pontos).map(([nome, pts]) => ({ nome, pts, regra: pts, acordo: L.membros.has(nome) }));
-    // etapas antigas: a posição sai dos pontos (90 = 1º, 75 = 2º... 10 = 6º, 5 = 11º) e quem fez acordo fica em 1º
+    // etapas antigas: a posição sai dos pontos (90 = 1º, 75 = 2º... 10 = 6º, 5 = 11º); quem fez acordo fica na posição do acordo (acordo em 4 → 4º, mesmo com jogador de fora do ranking)
     res.sort((a, b) => b.pts - a.pts || a.nome.localeCompare(b.nome)).forEach((r, i) => {
       if (L.pos) { r.pos = L.pos[r.nome]; return; }
       const t = CLUBE.pontosPorPosicao.indexOf(r.pts);
-      r.pos = r.acordo ? 1
+      r.pos = r.acordo ? L.acordo
         : t >= 0 ? t + 1
         : r.pts === CLUBE.pontosDemais ? CLUBE.pontosPorPosicao.length + 1
         : i && r.pts === res[i - 1].pts ? res[i - 1].pos : i + 1;
