@@ -106,7 +106,7 @@ h2{font-size:15px;font-weight:700;margin:0;letter-spacing:-.01em}
 .dobra[open] > summary{border-bottom:1px solid var(--line)}
 .dobra[open] > summary::after{content:"Fechar"}
 .dobra > summary:hover::after{border-color:var(--fg);color:var(--fg)}
-.resumo-home{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+.resumo-home{display:grid;grid-template-columns:minmax(0,1fr)}
 .rh-total{padding:18px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line)}
 .rh-total .lbl{color:var(--muted);font-size:12px}
 .rh-total .val{font-size:30px;font-weight:700;letter-spacing:-.02em}
@@ -798,7 +798,6 @@ function renderPainel() {
   </section>
 
   <section class="card resumo-home" aria-label="Resumo" style="margin-top:16px">
-    <div class="rh-total"><div class="lbl">Total</div><div class="val num">${brl(caixa.saldoPub)}</div></div>
     <div class="rh-top3">
       ${D.ranking.slice(0, 3).map(s => `<button class="rh-linha" data-ficha="${esc(s.nome)}">${medal(s.rank)}<b class="rh-nome">${esc(s.nome)}</b><span class="rh-pts num">${s.pts} pts</span></button>`).join("")}
     </div>
@@ -1399,13 +1398,6 @@ function renderCaixa() {
   app.innerHTML = headHtml("Caixa", "", { membros: false }) + `
   <section class="grid-3" style="margin-top:16px">
     ${POTES_PUB.map(p => `<div class="card kpi ${p === "caixa" ? "money" : ""}"><div class="kpi-top">${NOME_POTE[p]}<span class="dot" style="background:${COR_POTE[p]}"></span></div><div class="kpi-val num">${brl(P[p])}</div></div>`).join("")}
-  </section>
-  <section class="card strip strip5" style="margin-top:16px">
-    <div><div class="lbl">Total</div><div class="val num">${brl(caixa.saldoPub)}</div></div>
-    <div><div class="lbl">Sobra da quitação</div><div class="val num">${brl(sum(POTES_PUB.map(p => (caixa.sobraParts || {})[p] || 0)))}</div></div>
-    <div><div class="lbl">Torneio</div><div class="val num">${brl(liquidoPublico("torneio"))}</div></div>
-    <div><div class="lbl">Cash</div><div class="val num">${brl(liquidoPublico("cash"))}</div></div>
-    <div><div class="lbl">Gastos</div><div class="val num">${brl(caixa.saidas)}</div></div>
   </section>
   <details class="card dobra" style="margin-top:16px">
     <summary class="panel-head"><h2>Divisão por Entrada</h2></summary>
