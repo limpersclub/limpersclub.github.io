@@ -777,6 +777,8 @@ function renderPainel() {
   const top = D.ranking.slice(0, 10), maxPts = top[0].pts;
   const P = caixa.potes;
   const segs = POTES_PUB.map(p => ({ lbl: NOME_POTE[p], v: P[p], col: COR_POTE[p] }));
+  // pote negativo (ex.: caixa devendo) fica só na legenda, fora do gráfico
+  const positivos = segs.filter(s => s.v > 0), totalPos = sum(positivos.map(s => s.v));
 
   app.innerHTML = headHtml("Home", `<button class="ghost" data-go="ranking">Ver ranking completo</button>`) + `
   <section class="grid-3" aria-label="Dinheiro do clube" style="margin-top:16px">
@@ -818,9 +820,9 @@ function renderPainel() {
     <div class="card">
       <div class="panel-head"><h2>Divisão do Caixa</h2></div>
       <div class="panel-body donut-wrap">
-        ${donut(segs, brl(caixa.saldoPub), "guardados")}
+        ${donut(positivos, brl(totalPos), "guardados")}
         <div class="legend">
-          ${segs.map(s => `<div class="leg"><span><span class="pill" style="--c:${s.col}">${esc(s.lbl)}</span></span><span class="num">${brl(s.v)} · ${pct(s.v / caixa.saldoPub)}</span></div>`).join("")}
+          ${segs.map(s => `<div class="leg"><span><span class="pill" style="--c:${s.col}">${esc(s.lbl)}</span></span><span class="num">${brl(s.v)}${s.v > 0 ? " · " + pct(s.v / totalPos) : ""}</span></div>`).join("")}
         </div>
       </div>
     </div>
